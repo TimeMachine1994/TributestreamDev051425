@@ -262,6 +262,11 @@
           };
         }}
       >
++      {#if form?.success}
++        <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg mb-6" role="alert">
++          <span class="block text-lg">{form.message}</span>
++        </div>
++      {/if}
         {#if formError && !isPartialSuccess}
           <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg relative mb-6" role="alert">
             <span class="block text-lg">{formError}</span>
