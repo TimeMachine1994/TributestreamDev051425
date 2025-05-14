@@ -89,6 +89,10 @@ export const actions = {
     }
 
     // Success
-    return { success: true };
+    return {
+      success: true,
+      message: 'Your memorial form has been submitted successfully. A confirmation email has been sent.',
+      isPartialSuccess: true
+    };
   }
 } satisfies Actions;

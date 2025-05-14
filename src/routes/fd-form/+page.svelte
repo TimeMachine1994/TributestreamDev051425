@@ -1,6 +1,14 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import type { PageData } from "./$types";
+  import SuccessModal from '$lib/components/success-modal.svelte';
+  let showSuccessModal = false;
+  let successMessage = '';
++ import SuccessModal from '$lib/components/success-modal.svelte';
++
++ // modal state for submission success
++ let showSuccessModal = false;
++ let successMessage = '';
   
   // Define standalone interface for form action results
   interface FormActionResult {
@@ -250,6 +258,9 @@
               // Process any success data, including registration status
               processServerErrors(formResult.data);
               await update();
+              // Show success modal with message
+              successMessage = formResult.data?.message || 'Your memorial form has been submitted successfully. A confirmation email has been sent.';
+              showSuccessModal = true;
             } else {
               // Other cases
               isSubmitting = false;
@@ -555,3 +566,4 @@
     </div>
   </div>
 </section>
+<SuccessModal show={showSuccessModal} message={successMessage} redirectUrl="/" />
