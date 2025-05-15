@@ -7,12 +7,30 @@
 
 	const siteKey = env.PUBLIC_RECAPTCHA ?? '';
 
+	// Load the reCAPTCHA script asynchronously and safely
 	onMount(() => {
+		console.log('🧠 onMount: Preparing to load reCAPTCHA script...');
+
 		const script = document.createElement('script');
-		script.src = 'https://www.google.com/recaptcha/api.js';
+		script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
 		script.async = true;
 		script.defer = true;
 		document.head.appendChild(script);
+
+		console.log('📦 reCAPTCHA script appended to document.head');
+
+		// Safe fallback for grecaptcha.ready in case grecaptcha is not yet defined
+		if (typeof grecaptcha === 'undefined') {
+			console.warn('⚠️ grecaptcha is undefined at mount time. Creating fallback shim...');
+			grecaptcha = {
+				ready: function (cb) {
+					const c = '___grecaptcha_cfg';
+					window[c] = window[c] || {};
+					(window[c]['fns'] = window[c]['fns'] || []).push(cb);
+					console.log('✅ Callback pushed to grecaptcha fallback queue');
+				}
+			};
+		}
 	});
 
 	function onSubmit(token: string) {
@@ -24,6 +42,28 @@
 		form.appendChild(input);
 		form.submit();
 	}
+
+	// Handle reCAPTCHA v3 execution and form submission
+	async function handleRecaptcha() {
+		console.log('🛡️ handleRecaptcha: Waiting for grecaptcha to be ready...');
+		grecaptcha.ready(async () => {
+			console.log('✅ grecaptcha is ready. Executing...');
+			try {
+				const token = await grecaptcha.execute(siteKey, { action: 'submit' });
+				console.log('🔐 Token received from grecaptcha:', token);
+				onSubmit(token);
+			} catch (err) {
+				console.error('❌ Error executing grecaptcha:', err);
+			}
+		});
+	}
+
+	// Hide reCAPTCHA badge
+	onMount(() => {
+		const style = document.createElement('style');
+		style.innerHTML = '.grecaptcha-badge { visibility: hidden; }';
+		document.head.appendChild(style);
+	});
 	
 	export let data: PageData;
 	
@@ -121,11 +161,10 @@
 				</div>
 				
 				<div>
+					<!-- Updated button to use reCAPTCHA v3 with click handler -->
 					<button
-						class="g-recaptcha btn preset-filled-primary-500 w-full flex items-center justify-center"
-						data-sitekey={siteKey}
-						data-callback="onSubmit"
-						data-action="submit"
+						class="btn preset-filled-primary-500 w-full flex items-center justify-center"
+						on:click|preventDefault={handleRecaptcha}
 						disabled={$submitting}
 					>
 						{#if $submitting}
@@ -134,6 +173,13 @@
 							<span>Send Message</span>
 						{/if}
 					</button>
+
+					<!-- Legal notice for reCAPTCHA -->
+					<p class="text-xs text-surface-500 text-center mt-2">
+						This site is protected by reCAPTCHA and the Google
+						<a href="https://policies.google.com/privacy" class="underline" target="_blank">Privacy Policy</a> and
+						<a href="https://policies.google.com/terms" class="underline" target="_blank">Terms of Service</a> apply.
+					</p>
 				</div>
 			</form>
 		</div>
