@@ -14,6 +14,7 @@ export const load: PageServerLoad = async () => {
 
 export const actions = {
   sendMessage: async ({ request, fetch }) => {
+   
     console.log('🚀 Starting contact-us form action.');
     
     try {

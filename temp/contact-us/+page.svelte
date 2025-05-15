@@ -14,6 +14,16 @@
 		script.defer = true;
 		document.head.appendChild(script);
 	});
+
+	function onSubmit(token: string) {
+		const form = document.getElementById('contact-form') as HTMLFormElement;
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'g-recaptcha-response';
+		input.value = token;
+		form.appendChild(input);
+		form.submit();
+	}
 	
 	export let data: PageData;
 	
@@ -49,7 +59,7 @@
 				</div>
 			{/if}
 			
-			<form method="POST" action="?/sendMessage" use:enhance class="space-y-6">
+			<form id="contact-form" method="POST" action="?/sendMessage" use:enhance class="space-y-6">
 				<div>
 					<label for="name" class="label">
 						<span class="label-text">Your Name</span>
@@ -111,10 +121,11 @@
 				</div>
 				
 				<div>
-<div class="g-recaptcha" data-sitekey={siteKey}></div>
-					<button 
-						type="submit" 
-						class="btn preset-filled-primary-500 w-full flex items-center justify-center"
+					<button
+						class="g-recaptcha btn preset-filled-primary-500 w-full flex items-center justify-center"
+						data-sitekey={siteKey}
+						data-callback="onSubmit"
+						data-action="submit"
 						disabled={$submitting}
 					>
 						{#if $submitting}
