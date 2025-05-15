@@ -55,6 +55,40 @@ export const actions = {
       const rawFormData = await request.formData();
       const formDataObj = Object.fromEntries(rawFormData.entries());
       console.log('📦 Raw form data received:', formDataObj);
+
+      // Step 1: Extract reCAPTCHA token
+      const recaptchaToken = rawFormData.get('g-recaptcha-response');
+      console.log('🔐 reCAPTCHA token received:', recaptchaToken);
+
+      if (!recaptchaToken || typeof recaptchaToken !== 'string') {
+        console.error('❌ Missing or invalid reCAPTCHA token.');
+        const form = await superValidate(rawFormData, zod(scheduleSchema));
+        return fail(400, { form, message: 'Missing reCAPTCHA token.' });
+      }
+
+      // Step 2: Verify reCAPTCHA token with Google
+      console.log('🌐 Verifying reCAPTCHA token with Google...');
+      const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          secret: env.SECRET_RECAPTCHA_SECRET,
+          response: recaptchaToken
+        }).toString()
+      });
+
+      const recaptchaResult = await recaptchaResponse.json();
+      console.log('📄 reCAPTCHA verification response:', JSON.stringify(recaptchaResult, null, 2));
+
+      if (!recaptchaResult.success) {
+        console.error('❌ reCAPTCHA verification failed:', recaptchaResult['error-codes']);
+        const form = await superValidate(rawFormData, zod(scheduleSchema));
+        return fail(400, { form, message: 'reCAPTCHA verification failed.' });
+      }
+
+      console.log('✅ reCAPTCHA verification succeeded.');
       
       // Validate the form data using superValidate
       console.log('📝 Parsing and validating form data...');

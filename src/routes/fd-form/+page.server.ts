@@ -1,4 +1,5 @@
 import { fail } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 import type { Actions } from './$types';
 import { validateFuneralDirectorForm } from '$lib/utils/form-validation';
 
@@ -34,6 +35,43 @@ export const actions = {
     // STEP 1: Parse
     const form = await request.formData();
     const data = parseFormData(form);
+
+    // STEP 1.5: Extract reCAPTCHA token
+    const recaptchaToken = form.get('g-recaptcha-response') as string;
+    console.log('🛡️ Received reCAPTCHA token:', recaptchaToken);
+
+    if (!recaptchaToken) {
+      console.error('❌ Missing reCAPTCHA token');
+      return fail(400, {
+        error: true,
+        message: 'Missing reCAPTCHA token.'
+      });
+    }
+
+    // STEP 1.6: Verify reCAPTCHA token with Google
+    const recaptchaSecret = env.SECRET_RECAPTCHA_SECRET;
+    const verificationResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams([
+        ['secret', recaptchaSecret || ''],
+        ['response', recaptchaToken]
+      ])
+    });
+
+    const verificationResult = await verificationResponse.json();
+    console.log('🔍 reCAPTCHA verification result:', verificationResult);
+
+    if (!verificationResult.success) {
+      console.error('❌ reCAPTCHA verification failed:', verificationResult['error-codes']);
+      return fail(400, {
+        error: true,
+        message: 'reCAPTCHA verification failed.',
+        recaptcha: verificationResult['error-codes'] || []
+      });
+    }
+
+    console.log('✅ reCAPTCHA verification passed');
 
     // STEP 2: Validate
     const validation = validateFuneralDirectorForm(data);

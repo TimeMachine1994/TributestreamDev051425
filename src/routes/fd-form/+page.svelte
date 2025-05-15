@@ -184,8 +184,74 @@
   const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
   };
-</script>
+  import { onMount } from "svelte";
 
+  // Load reCAPTCHA v3 script on mount
+  onMount(() => {
+    console.log("🧠 Mounting component and loading reCAPTCHA script...");
+
+    const scriptId = "recaptcha-script";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://www.google.com/recaptcha/api.js?render=6LeUcBMlAAAAAK4z7ZcZCzv8kz3Z9ZKX9ZKX9ZKX";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+      console.log("📜 reCAPTCHA script appended to document.");
+    }
+
+    // Shim for grecaptcha.ready in case it's not defined yet
+    window.grecaptcha = window.grecaptcha || {
+      ready: (cb) => {
+        console.log("⚠️ grecaptcha.ready shim called.");
+        cb();
+      }
+    };
+  });
+
+  // Handle reCAPTCHA and submit form
+  async function handleRecaptcha(event: MouseEvent) {
+    event.preventDefault();
+    console.log("🛡️ reCAPTCHA triggered...");
+
+    const formEl = document.querySelector("form");
+    if (!formEl) {
+      console.error("❌ Form element not found.");
+      return;
+    }
+
+    // Validate client-side before reCAPTCHA
+    if (!validateForm()) {
+      console.warn("⚠️ Form validation failed. Aborting reCAPTCHA.");
+      formError = "Please correct the errors before submitting.";
+      return;
+    }
+
+    isSubmitting = true;
+
+    try {
+      await window.grecaptcha.ready(async () => {
+        console.log("✅ grecaptcha.ready resolved.");
+        const token = await window.grecaptcha.execute("6LeUcBMlAAAAAK4z7ZcZCzv8kz3Z9ZKX9ZKX9ZKX", { action: "submit" });
+        console.log("🔐 reCAPTCHA token received:", token);
+
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "g-recaptcha-response";
+        hiddenInput.value = token;
+        formEl.appendChild(hiddenInput);
+
+        console.log("📨 Submitting form with reCAPTCHA token...");
+        formEl.submit();
+      });
+    } catch (err) {
+      console.error("❌ Error during reCAPTCHA execution:", err);
+      formError = "An error occurred while verifying reCAPTCHA.";
+      isSubmitting = false;
+    }
+  }
+</script>
 <section class="bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen flex items-center justify-center p-4 text-lg">
   <div class="w-full max-w-6xl">
     <!-- Form Card -->
@@ -539,7 +605,8 @@
         <!-- Submit Button Area -->
         <div class="mt-8 flex justify-center">
           <button
-            type="submit"
+            type="button"
+            onclick={e => { e.preventDefault(); handleRecaptcha(e); }}
             class="bg-[#d5ba7f] hover:bg-[#c5aa6f] text-white text-xl font-bold py-4 px-10 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 w-full max-w-lg"
             disabled={isSubmitting}
           >
@@ -556,6 +623,15 @@
             {/if}
           </button>
         </div>
+
+        <!-- Legal notice for reCAPTCHA -->
+        <p class="text-sm text-gray-500 text-center mt-4">
+          This site is protected by reCAPTCHA and the Google
+          <a href="https://policies.google.com/privacy" class="underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          and
+          <a href="https://policies.google.com/terms" class="underline" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+          apply.
+        </p>
       </form>
     </div>
   </div>

@@ -28,14 +28,14 @@
                </a>
              </li>
              <li>
-               <!-- <a href="/contact-us" class="text-white hover:text-[#D5BA7F]">
+                <a href="/contact-us" class="text-white hover:text-[#D5BA7F]">
                  Contact Us
                </a>
              </li>
              <li>
                <a href="/schedule-now" class="text-white hover:text-[#D5BA7F]">
                  Schedule Now
-               </a> -->
+               </a>
              </li>
              <li>
                <a href="/my-portal" class={button}>
