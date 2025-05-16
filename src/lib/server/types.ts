@@ -33,39 +33,31 @@ export interface AuthError {
  
 // src/lib/server/auth/types.ts
 export interface User {
-    id: number;
-    documentId: string;
-    username: string;
-    email: string;
-    provider: string;
-    confirmed: boolean;
-    blocked: boolean;
-    fullName: string;
-    phoneNumber: string;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-    role: {
-        id: number;
-        documentId: string;
-        name: string;
-        description: string;
-        type: string;
-        createdAt: string;
-        updatedAt: string;
-        publishedAt: string;
-    };
+  id: string;
+  username: string;
+  email: string;
+  fullName?: string;
+  phoneNumber?: string;
+  role?: {
+    id: string;
+    name: string;
+    type: string;
+  };
 }
 
 /**
  * Tribute content type
  */
 export interface Tribute {
-  name: string;
+  id?: string;
+  loved_one_name: string;
   slug: string;
-  description: string;
-  status: 'draft' | 'published' | 'archived'; // Adjust enum values as needed
-  owner: User;
+  user_id: string;
+  phone_number?: string;
+  custom_html?: string;
+  status: 'draft' | 'published' | 'archived';
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**

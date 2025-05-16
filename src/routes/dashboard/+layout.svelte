@@ -2,25 +2,20 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
-  import { authStore } from '$lib/services/auth-service';
-  import { initializeBackbone } from '$lib/services/wp-backbone-service';
+  import { checkAuth, isLoggedIn } from '$lib/stores/auth-store.svelte';
   import Header from '$lib/components/dashboard/header.svelte';
   import Sidebar from '$lib/components/dashboard/sidebar.svelte';
   import Footer from '$lib/components/dashboard/footer.svelte';
 
-  // Initialize Backbone.js and check authentication
+  let isAuthenticated = $state(false);
+
   onMount(async () => {
-    // Skip initialization during SSR
     if (browser) {
-      // Initialize Backbone.js
-      initializeBackbone();
-      
-      // Check if user is authenticated
-      if (!$authStore.isAuthenticated) {
-        const isAuthenticated = await authStore.checkAuth();
-        
-        // If still not authenticated, redirect to login
-        if (!isAuthenticated) {
+      isAuthenticated = isLoggedIn;
+
+      if (!isAuthenticated) {
+        await checkAuth();
+        if (!isLoggedIn) {
           goto('/login?redirect=/dashboard');
         }
       }

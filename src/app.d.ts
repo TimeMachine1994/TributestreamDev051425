@@ -2,13 +2,20 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		// interface Error {}
 		interface Locals {
-			user?: import('$lib/server/strapi/user').StrapiUser;
+			user: import('$lib/server/types').User | null;
+			strapi: any;
 		}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+		
+		interface PageState {
+			showModal?: boolean;
+			selected?: any;
+		}
+		
+		interface Error {
+			code?: string;
+			message: string;
+		}
 	}
 }
 
