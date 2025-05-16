@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 
-import { buildStrapiQuery } from '$lib/server/utils/strapi/strapiQueryBuilder';
-
+ 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const body = await request.json();
@@ -11,23 +10,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
 		}
 
-		// Step 1: Get the role ID for "family-contact"
-		const roleQuery = buildStrapiQuery(
-			'https://miraculous-morning-0acdf6e165.strapiapp.com/api/users-permissions/roles',
-			{ filters: { name: { eq: 'family-contact' } } }
-		);
 
-		const roleRes = await fetch(roleQuery);
-		const roleData = await roleRes.json();
-
-		const role = roleData?.data?.[0];
-		if (!role) {
-			console.error('❌ Role "family-contact" not found');
-			return new Response(JSON.stringify({ error: 'Role not found' }), { status: 500 });
-		}
-
-		const roleId = role.id;
-		console.log('✅ Found role ID for family-contact:', roleId);
+		const role = "family-contact";
+		console.log('✅Role', role);
 
 		// Step 2: Register the user with the role
 		const registerRes = await fetch('https://miraculous-morning-0acdf6e165.strapiapp.com/api/auth/local/register', {
@@ -37,7 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				username,
 				email,
 				password,
-				role: roleId
+				role,
 			})
 		});
 
