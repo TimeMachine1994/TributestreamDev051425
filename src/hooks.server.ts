@@ -4,7 +4,7 @@ import { getUserFromJwt } from '$lib/server/utils/auth';
 export const handle: Handle = async ({ event, resolve }) => {
     console.log('hooks.handle: incoming cookie header:', event.request.headers.get('cookie'));
     // extract JWT token (legacy jwt_token or new jwt)
-    const token = event.cookies.get('jwt') ?? event.cookies.get('jwt_token');
+    const token = event.cookies.get('jwt');
     console.log('handle: token extracted from cookie:', token);
     // attempt to parse user cookie first
     const userCookie = event.cookies.get('user');

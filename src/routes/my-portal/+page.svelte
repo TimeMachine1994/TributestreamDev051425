@@ -4,7 +4,7 @@
   import FamilyContactPortal from '$lib/components/dashboard/FamilyContactPortal.svelte';
   import ProducerPortal from '$lib/components/dashboard/ProducerPortal.svelte';
   import PageBackground from '$lib/components/ui/PageBackground.svelte';
-  import type { Tribute } from '$lib/types/tribute';
+  import type { Tribute } from '$lib/server/types';
 
   interface PageData {
     user: { id: string; name: string; email: string; role: string };
