@@ -5,8 +5,8 @@
 
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { User } from '$lib/utils/cookie-auth';
-
+import type { User } from '$lib//server/types';
+import type { AuthError } from '$lib/server/types';
 /**
  * Interface for the auth store state
  */

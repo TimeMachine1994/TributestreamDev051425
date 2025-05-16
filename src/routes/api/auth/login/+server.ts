@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			console.log('✅ API: Authentication successful! JWT token received');
 			console.log(`🔑 API: Setting JWT cookie (length: ${data.jwt.length})`);
 			
-			cookies.set('jwt_token', data.jwt, {
+			cookies.set('jwt', data.jwt, {
 				httpOnly: true,
 				secure: true,
 				sameSite: 'lax',

@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { generateSecurePassword, setAuthCookies } from '$lib/utils/auth-helpers';
+import { generateSecurePassword } from '$lib/utils/auth-helpers';
 import { validateSimplifiedMemorialForm } from '$lib/utils/form-validation';
 import { createTributeSlug } from '$lib/utils/string-helpers';
 
@@ -24,7 +24,7 @@ export const actions = {
                 });
             }
             
-            // Call WordPress API through our proxy
+            // Call strapi through our proxy
             console.log(`🔍 Searching for: "${searchTerm}"`);
             const response = await fetch(`/api/tributes?search=${encodeURIComponent(searchTerm.trim())}`);
             
@@ -103,7 +103,8 @@ export const actions = {
                 body: JSON.stringify({
                     username: data.creatorEmail,
                     email: data.creatorEmail,
-                    password: password
+                    password: password,
+                    role:  'family-contact' // Assign the family-contact role
                 })
             });
             
@@ -162,7 +163,7 @@ export const actions = {
             
             // Step 4: Store the JWT token in cookies
             console.log('🔐 Storing authentication tokens');
-            cookies.set('jwt_token', authResult.token, { 
+            cookies.set('jwt', authResult.token, { 
                 httpOnly: true, 
                 secure: true, 
                 path: '/',
@@ -181,76 +182,8 @@ export const actions = {
                 maxAge: 60 * 60 * 24 * 7 // 7 days
             });
             
-            // Step 5: Store user metadata (enhanced format matching fd-form)
-            console.log('📝 Writing enhanced user metadata');
-            
-            // Parse name parts (better approach matching fd-form)
-            const nameParts = data.lovedOneName.trim().split(' ');
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-            
-            // Parse creator name parts for better metadata
-            const creatorNameParts = data.creatorFullName.trim().split(' ');
-            const creatorFirstName = creatorNameParts[0] || '';
-            const creatorLastName = creatorNameParts.length > 1
-                ? creatorNameParts[creatorNameParts.length - 1]
-                : '';
-            
-            // Create enhanced metadata matching fd-form format
-            const metaPayload = {
-                user_id: userId,
-                meta_key: 'memorial_form_data',
-                meta_value: JSON.stringify({
-                    director: {
-                        firstName: creatorFirstName,
-                        lastName: creatorLastName
-                    },
-                    deceased: {
-                        firstName,
-                        lastName,
-                        fullName: data.lovedOneName,
-                        // Include fd-form compatible fields
-                        dob: '',
-                        dop: ''
-                    },
-                    contact: {
-                        email: data.creatorEmail,
-                        phone: data.creatorPhone
-                    },
-                    // Include minimal memorial info for fd-form compatibility
-                    memorial: {
-                        locationName: '',
-                        locationAddress: '',
-                        time: '',
-                        date: ''
-                    }
-                })
-            };
-            
-            const metaResponse = await fetch('https://wp.tributestream.com/wp-json/tributestream/v1/user-meta', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authResult.token}`
-                },
-                body: JSON.stringify(metaPayload)
-            });
-            
-            // Handle metadata errors
-            if (!metaResponse.ok) {
-                const metaError = await metaResponse.json();
-                console.error('❌ Metadata write failed:', metaError);
-                return fail(metaResponse.status, { 
-                    create: true,
-                    error: true, 
-                    message: metaError.message || 'Failed to save memorial information',
-                    data
-                });
-            }
-            
-            console.log('✅ Metadata written successfully');
-            
-            // Step 6: Create the tribute record
+ 
+             // Step 6: Create the tribute record
             console.log('🚀 Creating tribute');
             
             // Generate the slug
@@ -276,14 +209,7 @@ export const actions = {
             
             console.log('📦 Sending enhanced tribute payload');
             
-            const tributeResponse = await fetch('https://wp.tributestream.com/wp-json/tributestream/v1/tributes', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authResult.token}`
-                },
-                body: JSON.stringify(tributePayload)
-            });
+            const tributeResponse = await fech //creat etribute with strapi
             
             // Handle tribute creation errors
             if (!tributeResponse.ok) {

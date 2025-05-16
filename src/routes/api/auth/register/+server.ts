@@ -1,19 +1,15 @@
 import type { RequestHandler } from './$types';
 
- 
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const body = await request.json();
-		const { username, email, password } = body;
+		const { username, email, password, role } = body;
 
 		if (!username || !email || !password) {
 			return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
 		}
-
-
-		const role = "family-contact";
-		console.log('✅Role', role);
-
+  
 		// Step 2: Register the user with the role
 		const registerRes = await fetch('https://miraculous-morning-0acdf6e165.strapiapp.com/api/auth/local/register', {
 			method: 'POST',

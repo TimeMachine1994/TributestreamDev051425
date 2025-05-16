@@ -59,7 +59,7 @@ export async function hashPassword(password: string): Promise<string> {
 /*
 export function setAuthCookies(cookies: any, authResponse: any): void {
   // Set JWT token cookie (httpOnly for security)
-  cookies.set('jwt_token', authResponse.token, {
+  cookies.set('jwt', authResponse.token, {
     path: '/',
     httpOnly: true,
     sameSite: 'strict',

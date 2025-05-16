@@ -1,42 +1,30 @@
-import { redirect } from '@sveltejs/kit';
-import { strapi } from '$lib/server/strapi/client';
-import type { Actions, PageServerLoad } from './$types';
-import type { User } from '$lib/server/types';
-    
- 
-export const load: PageServerLoad = async ({ locals }) => {
-  const user = locals.user;
+import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
+import { getUserFromJwt } from '$lib/server/utils/auth';
+import { getUserById } from '$lib/server/strapi/user';
 
-  if (!user) {
-    throw redirect(302, '/login');
-  }
+export const load: PageServerLoad = async ({ fetch, cookies }) => {
+	console.log('[my-portal/+page.server] Fetching tribute data from /api/tribute');
 
-  // extract and validate user role
-  const role = (user as User).role.type;
+	const res = await fetch('/api/tribute');
 
-  if (role === 'admin') {
-    throw redirect(302, '/admin');
-  }
+	if (!res.ok) {
+		console.error('[my-portal/+page.server] Failed to fetch tribute data:', res.status);
+		throw error(res.status, 'Failed to fetch tribute data');
+	}
 
-  const validRoles = [
-    'contributor',
-    'funeral-director',
-    'family-contact',
-    'producer'
-  ];
+	const tributeData = await res.json();
+	console.log('[my-portal/+page.server] tributeData:', tributeData);
 
-  if (!validRoles.includes(role)) {
-    throw redirect(302, '/login');
-  }
-  
-  const tributes = await strapi.collection('tributes').find({
-    filters: { user: user.id }
-  });
-  
-  return {
-    user,
-    tributes
-  };
+	const jwt = cookies.get('jwt');
+  //authenticate jwt and use the id from that 
+	const userJwt = jwt ? await getUserFromJwt(jwt) : null;
+  //convert the number to a string
+  const user = userJwt ? await getUserById(userJwt.id.toString()) : null;
+  //is it a number or is it a string?
+
+	return {
+		tributeData,
+		user
+	};
 };
- 
-   

@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {
-	cookies.set('jwt_token', '', {
+	cookies.set('jwt', '', {
 		path: '/',
 		expires: new Date(0)
 	});
