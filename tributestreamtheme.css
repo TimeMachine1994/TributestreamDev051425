@@ -1,7 +1,7 @@
 [data-theme='Tributestream'] {
 	--text-scaling: 1.125;
-	--base-font-color: var(--color-surface-950);
-	--base-font-color-dark: var(--color-surface-50);
+	--base-font-color: black;
+	--base-font-color-dark: black;
 	--base-font-family: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
 	--base-font-size: inherit;
 	--base-line-height: inherit;
@@ -33,8 +33,8 @@
 	--default-divide-width: 1px;
 	--default-ring-width: 1px;
 	--body-background-color: var(--color-surface-100);
-	--body-background-color-dark: var(--color-surface-800);
-	--color-primary-50: oklch(79.85% 0.08 85.98deg);
+	--body-background-color-dark: black;
+	--color-primary-50: black;
 	--color-primary-100: oklch(69.54% 0.08 85.73deg);
 	--color-primary-200: oklch(59.15% 0.07 85.83deg);
 	--color-primary-300: oklch(47.94% 0.06 85.87deg);

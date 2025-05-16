@@ -1,13 +1,10 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { enhance } from '$app/forms';
-  
-  // Form state
+  export let data: import('./$types').PageData;
   let username = '';
   let password = '';
   let loading = false;
-  let error: string | null = null;
-  
+  let error: string | null = data.error ?? null;
   // Handle form submission
   async function handleLogin(event: SubmitEvent) {
     const formData = new FormData(event.currentTarget as HTMLFormElement);
@@ -34,13 +31,7 @@
   <div class="login-card">
     <h1>Login</h1>
     
-    <form method="POST" action="/api/auth/login" use:enhance={({ result }) => {
-      if (result.type === 'success') {
-        goto('/my-portal');
-      } else if (result.type === 'failure') {
-        error = result.data?.message || 'Login failed';
-      }
-    }}>
+    <form method="POST" use:enhance={({ result }) => { if (result.type === 'failure') error = result.data?.error; }}>
       {#if error}
         <div class="error-message">
           {error}

@@ -1,19 +1,18 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import { strapi } from '$lib/server/strapi/client';
 import type { Actions, PageServerLoad } from './$types';
-import { superValidate, message } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
-import { loginSchema, portalSubscriptionSchema } from '$lib/utils/form-schemas';
+import type { User } from '$lib/server/types';
+    
  
-import { setAuthCookies, getUserFromCookies } from '$lib/utils/auth-helpers';
-
-export const load: PageServerLoad = async ({ locals, fetch }) => {
+export const load: PageServerLoad = async ({ locals }) => {
   const user = locals.user;
 
   if (!user) {
     throw redirect(302, '/login');
   }
 
-  const role = user.role;
+  // extract and validate user role
+  const role = (user as User).role.type;
 
   if (role === 'admin') {
     throw redirect(302, '/admin');
@@ -30,91 +29,14 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
     throw redirect(302, '/login');
   }
   
-  // Initialize the login form
-  const loginForm = await superValidate(zod(loginSchema));
+  const tributes = await strapi.collection('tributes').find({
+    filters: { user: user.id }
+  });
   
-  // Initialize the password reset form
-  const resetForm = await superValidate(zod(portalSubscriptionSchema));
-  
-  // If user is authenticated, fetch their tributes
-  let tributes = [];
-  if (user) {
-    try {
-      const response = await fetch(`/api/tributes?user_id=${user.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        tributes = data.tributes || [];
-      }
-    } catch (error) {
-      console.error('Error fetching tributes:', error);
-    }
-  }
-  
-  return { 
+  return {
     user,
-    tributes,
-    loginForm,
-    resetForm
+    tributes
   };
 };
-
-export const actions = {
-  // Login action
-  login: async ({ request, cookies, fetch }) => {
-    // Validate the form data
-    const loginForm = await superValidate(request, zod(loginSchema));
-    
-    // Check if form is valid
-    if (!loginForm.valid) {
-      return fail(400, { loginForm });
-    }
-    
-    try {
-      // Send authentication request to API
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: loginForm.data.username,
-          password: loginForm.data.password
-        })
-      });
-      
-      const data = await response.json();
-      
-      // Handle authentication failure
-      if (!response.ok) {
-        return message(loginForm, data.message || 'Authentication failed', {
-          status: 'error'
-        });
-      }
-      
-      // Set authentication cookies
-      setAuthCookies(cookies, data);
-      
-      // Return success message
-      return message(loginForm, 'Login successful', {
-        status: 'success'
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      return message(loginForm, 'An unexpected error occurred', {
-        status: 'error'
-      });
-    }
-  },
-  
-    
-  
-  // Logout action
-  logout: async ({ cookies }) => {
-    // Clear authentication cookies
-    cookies.delete('jwt_token', { path: '/' });
-    cookies.delete('user', { path: '/' });
-    
-    // Redirect to the login page
-    throw redirect(302, '/my-portal');
-  }
-} satisfies Actions;
+ 
+   

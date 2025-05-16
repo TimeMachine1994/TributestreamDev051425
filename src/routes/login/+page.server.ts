@@ -1,4 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
+
+export async function load({ locals }) {
+    if (locals.user) throw redirect(303, '/my-portal');
+    return {};
+}
 import type { Actions } from './$types';
 
 // Helper function for logging with timestamp
@@ -30,7 +35,7 @@ export const actions: Actions = {
 		
 		logWithTime('📧', `SERVER: Login attempt for email: ${email}, password length: ${password.length}`);
 		
-		logWithTime('🌐', 'SERVER: Sending request to internal API endpoint');
+		logWithTime('🌐', 'SERVER: Sending proxy request to internal API route');
 		const res = await fetch('/api/auth/login', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -41,31 +46,32 @@ export const actions: Actions = {
 
 		if (!res.ok) {
 			const data = await res.json();
-			logWithTime('❌', 'SERVER: Login failed', data);
-			return fail(res.status, { error: data.message || 'Login failed' });
+			logWithTime('❌', 'SERVER: Login failed via API proxy', data);
+			return fail(res.status, { error: data.error || 'Login failed' });
 		}
 		
-		logWithTime('✅', 'SERVER: Login successful');
+		// parse response data for successful login
 		const data = await res.json();
+		logWithTime('✅', 'SERVER: Login successful via API proxy', data);
 
-		// Set JWT and user cookies
+		// set cookies for client
 		cookies.set('jwt', data.jwt, {
 			httpOnly: true,
 			secure: true,
 			sameSite: 'lax',
-			path: '/',
-			maxAge: 60 * 60 * 24 * 7
+			path: '/'
 		});
-		cookies.set('user', encodeURIComponent(JSON.stringify(data.user)), {
-			// accessible on client-side
-			httpOnly: false,
+		logWithTime('🍪', 'SERVER: JWT cookie set', { length: data.jwt.length });
+
+		const userValue = encodeURIComponent(JSON.stringify(data.user));
+		cookies.set('user', userValue, {
+			httpOnly: true,
 			secure: true,
 			sameSite: 'lax',
-			path: '/',
-			maxAge: 60 * 60 * 24 * 7
+			path: '/'
 		});
+		logWithTime('🍪', 'SERVER: user cookie set');
 
-		logWithTime('🚀', 'SERVER: Redirecting to protected area');
 		throw redirect(303, '/my-portal');
 	}
 };

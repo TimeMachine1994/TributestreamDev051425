@@ -1,49 +1,63 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { signJwt, getTokenName } from '$lib/server/auth/jwt';
 
-const STRAPI_API_URL = process.env.STRAPI_API_URL;
-const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
+import { buildStrapiQuery } from '$lib/server/utils/strapi/strapiQueryBuilder';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { username, email, password } = await request.json();
+		const body = await request.json();
+		const { username, email, password } = body;
 
-		const res = await fetch(`${STRAPI_API_URL}/api/auth/local/register`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				...(STRAPI_API_TOKEN ? { Authorization: `Bearer ${STRAPI_API_TOKEN}` } : {})
-			},
-			body: JSON.stringify({ username, email, password })
-		});
-
-		if (!res.ok) {
-			const error = await res.json();
-			console.error('❌ Registration failed:', error);
-			return json({ error: 'Registration failed' }, { status: 400 });
+		if (!username || !email || !password) {
+			return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
 		}
 
-		const { user } = await res.json();
+		// Step 1: Get the role ID for "family-contact"
+		const roleQuery = buildStrapiQuery(
+			'https://miraculous-morning-0acdf6e165.strapiapp.com/api/users-permissions/roles',
+			{ filters: { name: { eq: 'family-contact' } } }
+		);
 
-		const token = signJwt({
-			id: user.id,
-			email: user.email,
-			role: user.role?.name || 'user'
+		const roleRes = await fetch(roleQuery);
+		const roleData = await roleRes.json();
+
+		const role = roleData?.data?.[0];
+		if (!role) {
+			console.error('❌ Role "family-contact" not found');
+			return new Response(JSON.stringify({ error: 'Role not found' }), { status: 500 });
+		}
+
+		const roleId = role.id;
+		console.log('✅ Found role ID for family-contact:', roleId);
+
+		// Step 2: Register the user with the role
+		const registerRes = await fetch('https://miraculous-morning-0acdf6e165.strapiapp.com/api/auth/local/register', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				username,
+				email,
+				password,
+				role: roleId
+			})
 		});
 
-		cookies.set(getTokenName(), token, {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: true,
-			maxAge: 60 * 60 * 24 * 7
-		});
+		const registerData = await registerRes.json();
 
-		console.log('✅ Registration successful for user:', user.email);
-		return json({ user: { id: user.id, email: user.email, role: user.role?.name } });
+		if (!registerRes.ok) {
+			console.error('❌ Registration failed:', registerData);
+			return new Response(JSON.stringify(registerData), {
+				status: registerRes.status,
+				headers: { 'Content-Type': 'application/json' }
+			});
+		}
+
+		console.log('🎉 User registered successfully as family-contact');
+		return new Response(JSON.stringify(registerData), {
+			status: 201,
+			headers: { 'Content-Type': 'application/json' }
+		});
 	} catch (err) {
-		console.error('❌ Unexpected error during registration:', err);
-		return json({ error: 'Internal server error' }, { status: 500 });
+		console.error('🔥 Unexpected error during registration:', err);
+		return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 	}
 };

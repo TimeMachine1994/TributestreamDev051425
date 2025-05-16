@@ -4,14 +4,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			authenticated?: boolean;
-			token?: string;
-			user?: {
-				id: string;
-				name: string;
-				email: string;
-				[key: string]: any;
-			};
+			user?: import('$lib/server/strapi/user').StrapiUser;
 		}
 		// interface PageData {}
 		// interface PageState {}

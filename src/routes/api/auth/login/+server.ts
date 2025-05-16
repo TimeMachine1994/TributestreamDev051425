@@ -1,45 +1,74 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { signJwt, getTokenName } from '$lib/server/auth/jwt';
-
-const STRAPI_API_URL = process.env.STRAPI_API_URL;
+import { getCurrentUser } from '$lib/server/strapi/user';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	try {
-		const { identifier, password } = await request.json();
+	console.log('🔐 API: Login request received');
+	console.log('🕵️‍♂️ API: Inspecting request headers:', Object.fromEntries(request.headers.entries()));
+	console.log('📏 API: Checking content length:', request.headers.get('content-length'));
+	console.log('🕰️ API: Request received at:', new Date().toISOString());
 
-		const res = await fetch(`${STRAPI_API_URL}/api/auth/local`, {
+	try {
+		const body = await request.json();
+		console.log(`📨 API: Login attempt for email: ${body.identifier || body.email}`);
+		console.log('📦 API: Full request body:', body);
+
+		console.log('🌐 API: Sending request to Strapi authentication endpoint');
+		const res = await fetch('https://miraculous-morning-0acdf6e165.strapiapp.com/api/auth/local', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ identifier, password })
+			body: JSON.stringify(body)
 		});
+		
+		console.log(`🔄 API: Strapi responded with status: ${res.status}`);
+		const data = await res.json();
+		console.log('📬 API: Response body from Strapi:', data);
 
-		if (!res.ok) {
-			const error = await res.json();
-			console.error('❌ Login failed:', error);
-			return json({ error: 'Invalid credentials' }, { status: 401 });
+		if (res.ok && data.jwt) {
+			console.log('✅ API: Authentication successful! JWT token received');
+			console.log(`🔑 API: Setting JWT cookie (length: ${data.jwt.length})`);
+			
+			cookies.set('jwt_token', data.jwt, {
+				httpOnly: true,
+				secure: true,
+				sameSite: 'lax',
+				path: '/'
+ 			});
+			console.log('🍪 API: JWT cookie set successfully (7d expiry)');
+		} else {
+			console.error('❌ API: Authentication failed', data);
+			return new Response(JSON.stringify(data), {
+				status: res.status,
+				headers: { 'Content-Type': 'application/json' }
+			});
 		}
 
-		const { user, jwt } = await res.json();
-
-		const token = signJwt({
-			id: user.id,
-			email: user.email,
-			role: user.role?.name || 'user'
+		console.log('📡 API: Fetching current user via Strapi client');
+		const fullUser = await getCurrentUser(data.jwt);
+		console.log('🧾 API: fullUser:', fullUser);
+		// set user cookie with user data
+		const userValue = encodeURIComponent(JSON.stringify(fullUser));
+		cookies.set('user', userValue, {
+		  httpOnly: true,
+		  secure: true,
+		  sameSite: 'lax',
+		  path: '/'
 		});
+		console.log('🍪 API: user cookie set successfully');
 
-		cookies.set(getTokenName(), token, {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: true,
-			maxAge: 60 * 60 * 24 * 7 // 7 days
+		const responsePayload = JSON.stringify({
+		  ...data,
+		  user: fullUser
 		});
-
-		console.log('✅ Login successful for user:', user.email);
-		return json({ user: { id: user.id, email: user.email, role: user.role?.name } });
-	} catch (err) {
-		console.error('❌ Unexpected error during login:', err);
-		return json({ error: 'Internal server error' }, { status: 500 });
+		console.log('📦 API: Final response payload to client:', responsePayload);
+		return new Response(responsePayload, {
+			status: res.status,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	} catch (error) {
+		console.error('💥 API: Error in login handler:', error);
+		return new Response(JSON.stringify({ error: 'Internal server error' }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' }
+		});
 	}
 };

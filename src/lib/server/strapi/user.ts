@@ -20,3 +20,13 @@ export async function deleteUser(id: string) {
   const entry = await strapi.collection('users').delete(id);
   return entry;
 }
+export async function getCurrentUser(jwt: string) {
+  const user = await strapi.fetch('users/me?populate=role', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return user;
+}
