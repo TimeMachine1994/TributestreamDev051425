@@ -1,30 +1,20 @@
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
+import { env } from '$env/dynamic/private';
+import type { User } from '$lib/server/auth/types';
 
-const TOKEN_NAME = process.env.PUBLIC_AUTH_TOKEN_NAME || 'auth_token';
-const TOKEN_EXPIRY = process.env.PUBLIC_AUTH_TOKEN_EXPIRY || '7d';
-const JWT_SECRET = process.env.JWT_SECRET || 'changeme-secret';
-
-export interface AuthTokenPayload {
-	id: number;
-	email: string;
-	role: string;
+export async function getUserFromToken(token: string): Promise<User | null> {
+  try {
+    const rawSecret = env.STRAPI_JWT_SECRET;
+    if (!rawSecret) throw new Error('Missing STRAPI_JWT_SECRET');
+    const secret = new TextEncoder().encode(rawSecret);
+    const { payload } = await jwtVerify(token, secret);
+    return payload as unknown as User;
+  } catch (err) {
+    console.error('getUserFromToken error:', err);
+    return null;
+  }
 }
 
-export function signJwt(payload: AuthTokenPayload): string {
-	return jwt.sign(payload, JWT_SECRET, {
-		expiresIn: TOKEN_EXPIRY
-	});
-}
-
-export function verifyJwt(token: string): AuthTokenPayload | null {
-	try {
-		return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
-	} catch (err) {
-		console.error('❌ Invalid JWT:', err);
-		return null;
-	}
-}
-
-export function getTokenName(): string {
-	return TOKEN_NAME;
+export function extractTokenFromCookie(cookieString: string): string | null {
+  return cookieString?.match(/jwt=([^;]+)/)?.[1] || null;
 }

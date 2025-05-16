@@ -1,24 +1,13 @@
 import type { Handle } from '@sveltejs/kit';
-import { getTokenName, verifyJwt } from '$lib/server/auth/jwt';
+import { getUserFromJwt } from '$lib/server/utils/auth';
 
-/**
- * Server hook for handling authentication state
- * Validates JWT tokens and manages authenticated user state
- */
 export const handle: Handle = async ({ event, resolve }) => {
-    // Get JWT token from cookies
-    const token = event.cookies.get(getTokenName());
+    const token = event.cookies.get('jwt');
 
     if (token) {
-        const user = verifyJwt(token);
-        if (user) {
-            event.locals.user = user;
-            console.log('🔐 Authenticated user:', user.email);
-        } else {
-            console.warn('⚠️ Invalid JWT token');
-        }
+        const user = await getUserFromJwt(token);
+        event.locals.user = user;
     }
-    
-    // Continue with the request
+
     return await resolve(event);
 };
