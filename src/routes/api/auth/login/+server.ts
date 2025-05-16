@@ -3,28 +3,24 @@ import type { RequestHandler } from './$types';
 import { signJwt, getTokenName } from '$lib/server/auth/jwt';
 
 const STRAPI_API_URL = process.env.STRAPI_API_URL;
-const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
-		const { username, email, password } = await request.json();
+		const { identifier, password } = await request.json();
 
-		const res = await fetch(`${STRAPI_API_URL}/api/auth/local/register`, {
+		const res = await fetch(`${STRAPI_API_URL}/api/auth/local`, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				...(STRAPI_API_TOKEN ? { Authorization: `Bearer ${STRAPI_API_TOKEN}` } : {})
-			},
-			body: JSON.stringify({ username, email, password })
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ identifier, password })
 		});
 
 		if (!res.ok) {
 			const error = await res.json();
-			console.error('❌ Registration failed:', error);
-			return json({ error: 'Registration failed' }, { status: 400 });
+			console.error('❌ Login failed:', error);
+			return json({ error: 'Invalid credentials' }, { status: 401 });
 		}
 
-		const { user } = await res.json();
+		const { user, jwt } = await res.json();
 
 		const token = signJwt({
 			id: user.id,
@@ -37,13 +33,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			httpOnly: true,
 			sameSite: 'lax',
 			secure: true,
-			maxAge: 60 * 60 * 24 * 7
+			maxAge: 60 * 60 * 24 * 7 // 7 days
 		});
 
-		console.log('✅ Registration successful for user:', user.email);
+		console.log('✅ Login successful for user:', user.email);
 		return json({ user: { id: user.id, email: user.email, role: user.role?.name } });
 	} catch (err) {
-		console.error('❌ Unexpected error during registration:', err);
+		console.error('❌ Unexpected error during login:', err);
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
 };

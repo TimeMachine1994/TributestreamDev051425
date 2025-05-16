@@ -1,13 +1,16 @@
 <script lang="ts">
   import LoginForm from '$lib/components/auth/login-form.svelte';
   import ForgotPassword from '$lib/components/auth/forgot-password.svelte';
-  import TributeGrid from '$lib/components/tributes/tribute-grid.svelte';
+  import ContributorPortal from '$lib/components/dashboard/ContributorPortal.svelte';
+  import FuneralDirectorPortal from '$lib/components/dashboard/FuneralDirectorPortal.svelte';
+  import FamilyContactPortal from '$lib/components/dashboard/FamilyContactPortal.svelte';
+  import ProducerPortal from '$lib/components/dashboard/ProducerPortal.svelte';
   import PageBackground from '$lib/components/ui/PageBackground.svelte';
   import type { Tribute } from '$lib/types/tribute';
   import type { SuperValidated } from 'sveltekit-superforms';
   
   interface PageData {
-    user: { id: string; name: string; email: string } | null;
+    user: { id: string; name: string; email: string; role: string } | null;
     tributes: Tribute[];
     loginForm: SuperValidated<Record<string, unknown>>;
     resetForm: SuperValidated<Record<string, unknown>>;
@@ -63,7 +66,17 @@
             </p>
           </div>
           
-          <TributeGrid tributes={data.tributes} />
+          {#if data.user.role === 'contributor'}
+            <ContributorPortal />
+          {:else if data.user.role === 'funeral-director'}
+            <FuneralDirectorPortal />
+          {:else if data.user.role === 'family-contact'}
+            <FamilyContactPortal />
+          {:else if data.user.role === 'producer'}
+            <ProducerPortal />
+          {:else}
+            <p class="text-red-600">Unknown role: {data.user.role}</p>
+          {/if}
         </div>
       </div>
     {:else}

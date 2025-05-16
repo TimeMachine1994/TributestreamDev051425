@@ -1,8 +1,9 @@
 /**
- * WordPress User Registration Service
- * Handles user registration with the WordPress API via the existing registration endpoint
+ * TODO: Remove this file once Strapi-based registration is implemented.
+ * WordPress User Registration Service (DISABLED)
  */
 
+/*
 interface RegistrationResult {
     success: boolean;
     message: string;
@@ -18,12 +19,6 @@ interface UserData {
     password?: string; // Optional, will be generated if not provided
 }
 
-/**
- * Register a new user in WordPress
- * 
- * @param userData User data to register
- * @returns Promise resolving to a RegistrationResult
- */
 export async function registerWordPressUser(userData: UserData): Promise<RegistrationResult> {
     console.log(`🏁 Attempting to register user in WordPress: ${userData.email}`);
 
@@ -60,14 +55,11 @@ export async function registerWordPressUser(userData: UserData): Promise<Registr
             };
         } else {
             console.warn(`❌ WordPress user registration failed for ${userData.email}. Status: ${response.status}`);
-            
-          
-                return {
-                    success: false,
-                    message: `User with username derived from ${userData.email} already exists.`,
-                    isDuplicate: true
-                };
-            
+            return {
+                success: false,
+                message: `User with username derived from ${userData.email} already exists.`,
+                isDuplicate: true
+            };
         }
     } catch (error: any) {
         console.error(`💥 Error during WordPress user registration for ${userData.email}:`, error);
@@ -77,3 +69,4 @@ export async function registerWordPressUser(userData: UserData): Promise<Registr
         };
     }
 }
+*/

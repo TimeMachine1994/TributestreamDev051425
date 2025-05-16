@@ -9,6 +9,7 @@ import type {
   MasterStore
 } from '$lib/stores/master-store.svelte';
 import type { Cookies } from '@sveltejs/kit';
+import bcrypt from 'bcryptjs';
 
 export interface User {
   id: string;
@@ -38,10 +39,24 @@ export function generateSecurePassword(length = 12): string {
 }
 
 /**
+ * Hashes a password using bcrypt
+ * @param password Plain text password
+ * @returns Hashed password
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+}
+
+/**
  * Sets authentication cookies based on API response
  * @param cookies The cookies object from the event
  * @param authResponse The response from the auth API
  */
+/**
+ * TODO: Replace with Strapi-based auth cookie logic
+ */
+/*
 export function setAuthCookies(cookies: any, authResponse: any): void {
   // Set JWT token cookie (httpOnly for security)
   cookies.set('jwt_token', authResponse.token, {
@@ -65,6 +80,7 @@ export function setAuthCookies(cookies: any, authResponse: any): void {
     maxAge: 60 * 60 * 24 * 7 // 1 week
   });
 }
+*/
 
 /**
  * Converts MasterStore data to user-meta format
@@ -90,6 +106,10 @@ export function convertMasterStoreToUserMeta(masterStore: Partial<MasterStore> |
  * @param token JWT token
  * @param fetchFn Optional fetch function (use event.fetch in server contexts)
  */
+/**
+ * TODO: Replace with Strapi-based user meta storage
+ */
+/*
 export async function storeMasterDataInUserMeta(
   userId: string,
   masterData: any,
@@ -115,6 +135,7 @@ export async function storeMasterDataInUserMeta(
   
   return await response.json();
 }
+*/
 
 /**
  * Sends a welcome email to newly registered users
@@ -128,6 +149,10 @@ export async function storeMasterDataInUserMeta(
  * @param cookies The cookies object from the event
  * @returns User data or null if not found
  */
+/**
+ * TODO: Replace with Strapi-based user cookie parsing
+ */
+/*
 export function getUserFromCookies(cookies: Cookies): User | null {
   const userCookie = cookies.get('user');
   if (!userCookie) return null;
@@ -139,6 +164,7 @@ export function getUserFromCookies(cookies: Cookies): User | null {
     return null;
   }
 }
+*/
 
 /**
  * Loads user data from the user-meta API
@@ -147,6 +173,10 @@ export function getUserFromCookies(cookies: Cookies): User | null {
  * @param fetchFn Optional fetch function (use event.fetch in server contexts)
  * @returns User data or null if not found
  */
+/**
+ * TODO: Replace with Strapi-based user meta loading
+ */
+/*
 export async function loadUserData(
   userId: string,
   token: string | undefined,
@@ -170,7 +200,12 @@ export async function loadUserData(
   
   return await response.json();
 }
+*/
 
+/**
+ * TODO: Replace with Strapi-based welcome email logic
+ */
+/*
 export async function sendWelcomeEmail(
   email: string,
   username: string,
@@ -226,3 +261,4 @@ export async function sendWelcomeEmail(
     return { success: false, error: 'Email service error' };
   }
 }
+*/

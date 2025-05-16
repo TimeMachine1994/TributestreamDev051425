@@ -6,9 +6,29 @@ import { loginSchema, portalSubscriptionSchema } from '$lib/utils/form-schemas';
  
 import { setAuthCookies, getUserFromCookies } from '$lib/utils/auth-helpers';
 
-export const load: PageServerLoad = async ({ cookies, fetch }) => {
-  // Check if user is already authenticated
-  const user = getUserFromCookies(cookies);
+export const load: PageServerLoad = async ({ locals, fetch }) => {
+  const user = locals.user;
+
+  if (!user) {
+    throw redirect(302, '/login');
+  }
+
+  const role = user.role;
+
+  if (role === 'admin') {
+    throw redirect(302, '/admin');
+  }
+
+  const validRoles = [
+    'contributor',
+    'funeral-director',
+    'family-contact',
+    'producer'
+  ];
+
+  if (!validRoles.includes(role)) {
+    throw redirect(302, '/login');
+  }
   
   // Initialize the login form
   const loginForm = await superValidate(zod(loginSchema));

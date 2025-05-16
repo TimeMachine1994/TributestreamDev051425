@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { getTokenFromCookie, getUserFromCookie, validateToken, clearAuthCookies } from '$lib/utils/cookie-auth';
+import { getTokenName, verifyJwt } from '$lib/server/auth/jwt';
 
 /**
  * Server hook for handling authentication state
@@ -7,29 +7,15 @@ import { getTokenFromCookie, getUserFromCookie, validateToken, clearAuthCookies 
  */
 export const handle: Handle = async ({ event, resolve }) => {
     // Get JWT token from cookies
-    const token = getTokenFromCookie(event.cookies);
-    
+    const token = event.cookies.get(getTokenName());
+
     if (token) {
-        try {
-            // Validate token with WordPress endpoint
-            const isValid = await validateToken(token);
-            
-            if (isValid) {
-                // If token is valid, set authenticated status in locals
-                event.locals.authenticated = true;
-                event.locals.token = token;
-                
-                // Also set user info if available
-                const user = getUserFromCookie(event.cookies);
-                if (user) {
-                    event.locals.user = user;
-                }
-            } else {
-                // If token validation fails, clear the cookies
-                clearAuthCookies(event.cookies);
-            }
-        } catch (error) {
-            console.error('Error validating JWT token:', error);
+        const user = verifyJwt(token);
+        if (user) {
+            event.locals.user = user;
+            console.log('🔐 Authenticated user:', user.email);
+        } else {
+            console.warn('⚠️ Invalid JWT token');
         }
     }
     

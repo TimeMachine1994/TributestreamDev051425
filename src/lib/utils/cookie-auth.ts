@@ -78,6 +78,10 @@ export function getUserFromCookie(cookies: Cookies): User | null {
  * @param token JWT token to validate
  * @returns Whether the token is valid
  */
+/**
+ * TODO: Replace with Strapi-based token validation
+ */
+/*
 export async function validateToken(token: string): Promise<boolean> {
   if (!token) return false;
   
@@ -95,12 +99,17 @@ export async function validateToken(token: string): Promise<boolean> {
     return false;
   }
 }
+*/
 
 /**
  * Formats user data from WordPress response
  * @param data WordPress response data
  * @returns Formatted user data
  */
+/**
+ * TODO: Replace with Strapi-based user formatting
+ */
+/*
 export function formatUserData(data: any): User {
   return {
     id: data.user_id || data.id,
@@ -111,3 +120,4 @@ export function formatUserData(data: any): User {
     capabilities: data.capabilities || {}
   };
 }
+*/

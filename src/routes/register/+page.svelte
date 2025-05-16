@@ -1,44 +1,24 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { enhance } from '$app/forms';
-  
-  // Form state
-  let username = '';
-  let password = '';
-  let loading = false;
-  let error: string | null = null;
-  
-  // Handle form submission
-  async function handleLogin(event: SubmitEvent) {
-    const formData = new FormData(event.currentTarget as HTMLFormElement);
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      body: formData
-    });
+  import { goto } from '$app/navigation';
 
-    if (res.ok) {
-      goto('/my-portal');
-    } else {
-      const result = await res.json();
-      error = result?.message || 'Login failed';
-    }
-  }
+  let error: string | null = null;
 </script>
 
 <svelte:head>
-  <title>Login | TributeStream</title>
-  <meta name="description" content="Log in to your TributeStream account" />
+  <title>Register | TributeStream</title>
+  <meta name="description" content="Create your TributeStream account" />
 </svelte:head>
 
-<div class="login-container">
-  <div class="login-card">
-    <h1>Login</h1>
-    
-    <form method="POST" action="/api/auth/login" use:enhance={({ result }) => {
+<div class="register-container">
+  <div class="register-card">
+    <h1>Create Account</h1>
+
+    <form method="POST" action="/api/auth/register" use:enhance={({ result }) => {
       if (result.type === 'success') {
         goto('/my-portal');
       } else if (result.type === 'failure') {
-        error = result.data?.message || 'Login failed';
+        error = result.data?.message || 'Registration failed';
       }
     }}>
       {#if error}
@@ -46,45 +26,54 @@
           {error}
         </div>
       {/if}
-      
+
       <div class="form-group">
         <label for="username">Username</label>
-        <input 
-          type="text" 
-          id="username" 
-          bind:value={username} 
-          disabled={loading}
-          placeholder="Enter your username"
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          placeholder="Choose a username"
           autocomplete="username"
         />
       </div>
-      
+
       <div class="form-group">
-        <label for="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          bind:value={password} 
-          disabled={loading}
-          placeholder="Enter your password"
-          autocomplete="current-password"
+        <label for="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          placeholder="Enter your email"
+          autocomplete="email"
         />
       </div>
-      
-      <button type="submit" class="login-button" disabled={loading}>
-        {loading ? 'Logging in...' : 'Login'}
-      </button>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          placeholder="Create a password"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button type="submit" class="register-button">Register</button>
     </form>
-    
+
     <div class="links">
-      <a href="/forgot-password">Forgot password?</a>
-      <a href="/register">Create an account</a>
+      <a href="/login">Already have an account? Log in</a>
     </div>
   </div>
 </div>
 
 <style>
-  .login-container {
+  .register-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -92,8 +81,8 @@
     padding: 2rem;
     background-color: #f5f5f5;
   }
-  
-  .login-card {
+
+  .register-card {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -101,25 +90,25 @@
     width: 100%;
     max-width: 400px;
   }
-  
+
   h1 {
     font-size: 1.8rem;
     color: #333;
     margin-bottom: 1.5rem;
     text-align: center;
   }
-  
+
   .form-group {
     margin-bottom: 1.5rem;
   }
-  
+
   label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #555;
   }
-  
+
   input {
     width: 100%;
     padding: 0.75rem;
@@ -127,14 +116,14 @@
     border-radius: 4px;
     font-size: 1rem;
   }
-  
+
   input:focus {
     outline: none;
     border-color: #4a90e2;
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
   }
-  
-  .login-button {
+
+  .register-button {
     width: 100%;
     padding: 0.75rem;
     background-color: #4a90e2;
@@ -146,16 +135,11 @@
     cursor: pointer;
     transition: background-color 0.2s;
   }
-  
-  .login-button:hover {
+
+  .register-button:hover {
     background-color: #3a80d2;
   }
-  
-  .login-button:disabled {
-    background-color: #a0c0e8;
-    cursor: not-allowed;
-  }
-  
+
   .error-message {
     background-color: #ffebee;
     color: #e53935;
@@ -164,19 +148,18 @@
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
   }
-  
+
   .links {
-    display: flex;
-    justify-content: space-between;
     margin-top: 1.5rem;
     font-size: 0.9rem;
+    text-align: center;
   }
-  
+
   .links a {
     color: #4a90e2;
     text-decoration: none;
   }
-  
+
   .links a:hover {
     text-decoration: underline;
   }
