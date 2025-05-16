@@ -12,7 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     let user = null;
     if (userCookie) {
       try {
-        user = JSON.parse(userCookie);
+        user = JSON.parse(decodeURIComponent(userCookie));
       } catch (err) {
         console.error('handle: error parsing user cookie:', err);
         user = token ? await getUserFromJwt(token) : null;
