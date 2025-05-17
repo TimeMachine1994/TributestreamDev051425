@@ -1,9 +1,8 @@
 import { getUserFromToken as _getUserFromJwt } from '$lib/server/auth/jwt';
-export async function getUserFromJwt(token: string) {
+import type { RequestEvent } from '@sveltejs/kit';
 
-
-  
-  return _getUserFromJwt(token);
+export async function getUserFromJwt(token: string, event: RequestEvent) {
+  return _getUserFromJwt(token, event);
 }
 
 import { serialize } from 'cookie';

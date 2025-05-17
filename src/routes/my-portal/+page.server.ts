@@ -3,7 +3,8 @@ import { error } from '@sveltejs/kit';
 import { getUserFromJwt } from '$lib/server/utils/auth';
 import { getUserById } from '$lib/server/strapi/user';
 
-export const load: PageServerLoad = async ({ fetch, cookies }) => {
+export const load: PageServerLoad = async (event) => {
+	const { fetch, cookies } = event;
 	console.log('[my-portal/+page.server] Fetching tribute data from /api/tributes');
 
 	const res = await fetch('/api/tributes');
@@ -17,11 +18,8 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 	console.log('[my-portal/+page.server] tributeData:', tributeData);
 
 	const jwt = cookies.get('jwt');
-  //authenticate jwt and use the id from that 
-	const userJwt = jwt ? await getUserFromJwt(jwt) : null;
-  //convert the number to a string
-  const user = userJwt ? await getUserById(userJwt.id.toString()) : null;
-  //is it a number or is it a string?
+	const userJwt = jwt ? await getUserFromJwt(jwt, event) : null;
+	const user = userJwt ? await getUserById(userJwt.id.toString(), event) : null;
 
 	return {
 		tributeData,
