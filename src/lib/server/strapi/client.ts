@@ -1,9 +1,14 @@
 import { strapi as createStrapiClient } from '@strapi/client';
 import { env } from '$env/dynamic/private';
 
-const strapi = createStrapiClient({
-  baseURL: env.STRAPI_API_URL,
-  auth: env.STRAPI_API_TOKEN!
-});
+import type { RequestEvent } from '@sveltejs/kit';
 
-export { strapi };
+export function getStrapiClient(event: RequestEvent) {
+  const jwt = event.cookies.get('jwt');
+  console.log('🍪 JWT from cookie:', jwt);
+
+  return createStrapiClient({
+    baseURL: env.STRAPI_API_URL,
+    auth: jwt ?? undefined
+  });
+}

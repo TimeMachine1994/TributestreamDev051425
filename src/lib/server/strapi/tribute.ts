@@ -1,43 +1,66 @@
-import { strapi } from './client';
-import type { Tribute } from '$lib/server/types';
+import { strapi as createStrapiClient } from '@strapi/client';
+import type { Tribute } from '$lib/types/tribute';
 
-const endpoint = 'api/tributes';
+type PaginationMeta = {
+	page: number;
+	pageSize: number;
+	pageCount: number;
+	total: number;
+};
 
-export async function createTribute(data: Partial<Tribute>) {
+export type { PaginationMeta };
+
+import { getStrapiClient } from './client';
+import type { RequestEvent } from '@sveltejs/kit';
+
+export async function createTribute(data: Partial<Tribute>, jwt: string): Promise<Tribute> {
 	console.log('🟢 Creating tribute...', data);
-	const res = await strapi.post(endpoint, { data });
-	return res.data;
+	const res = await fetch('https://miraculous-morning-0acdf6e165.strapiapp.com/api/tributes', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${jwt}`
+		},
+		body: JSON.stringify({ data })
+	});
+	if (!res.ok) {
+		throw new Error(`Failed to create tribute: ${res.statusText}`);
+	}
+	const json = await res.json();
+	return json.data;
 }
 
-export async function getTributeById(id: string | number) {
+export async function getTributeById(id: string | number, event: RequestEvent) {
 	console.log('🔵 Fetching tribute by ID:', id);
-	const res = await strapi.get(`${endpoint}/${id}`, {
-		params: { populate: 'deep' }
+	const strapi = getStrapiClient(event);
+	const res = await strapi.collection('tributes').findOne(String(id), {
+		populate: 'deep'
 	});
 	return res.data;
 }
 
-export async function getTributeBySlug(slug: string) {
+export async function getTributeBySlug(slug: string, event: RequestEvent) {
 	console.log('🟣 Fetching tribute by slug:', slug);
-	const res = await strapi.get(endpoint, {
-		params: {
-			filters: { slug: { $eq: slug } },
-			populate: 'deep'
-		}
+	const strapi = getStrapiClient(event);
+	const res = await strapi.collection('tributes').find({
+		filters: { slug: { $eq: slug } },
+		populate: 'deep'
 	});
 	return res.data?.[0] ?? null;
 }
 
-export async function updateTribute(id: string | number, data: Partial<Tribute>) {
+export async function updateTribute(id: string | number, data: Partial<Tribute>, event: RequestEvent) {
 	console.log('🟠 Updating tribute ID:', id, data);
-	const res = await strapi.put(`${endpoint}/${id}`, { data });
+	const strapi = getStrapiClient(event);
+	const res = await strapi.collection('tributes').update(String(id), { data });
 	return res.data;
 }
 
-export async function deleteTribute(id: string | number) {
+export async function deleteTribute(id: string | number, event: RequestEvent) {
 	console.log('🔴 Deleting tribute ID:', id);
-	const res = await strapi.del(`${endpoint}/${id}`);
-	return res.data;
+	const strapi = getStrapiClient(event);
+	await strapi.collection('tributes').delete(String(id));
+	return { success: true };
 }
 
 export async function searchTributes({
@@ -48,8 +71,10 @@ export async function searchTributes({
 	page?: number;
 	pageSize?: number;
 	query?: string;
-}) {
+}, event: RequestEvent): Promise<{ items: Tribute[]; meta: PaginationMeta }> {
 	console.log('🟡 Searching tributes...', { page, pageSize, query });
+	const strapi = getStrapiClient(event);
+
 	const filters = query
 		? {
 				$or: [
@@ -60,16 +85,13 @@ export async function searchTributes({
 		  }
 		: undefined;
 
-	const res = await strapi.get(endpoint, {
-		params: {
-			populate: 'deep',
-			pagination: { page, pageSize },
-			filters
-		}
+	const res = await strapi.collection('tributes').find({
+		pagination: { page, pageSize },
+		filters
 	});
 
 	return {
-		items: res.data,
-		meta: res.meta
+		items: res.data as unknown as Tribute[],
+		meta: res.meta.pagination as PaginationMeta
 	};
 }

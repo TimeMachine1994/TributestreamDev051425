@@ -1,7 +1,7 @@
 import { jwtVerify, errors } from 'jose';
 import { env } from '$env/dynamic/private';
 import type { User } from '$lib/server/types';
-import { strapi } from '$lib/server/strapi/client';
+import { getStrapiClient } from '$lib/server/strapi/client';
 
 export class TokenExpiredError extends Error {
   constructor(message: string) {
@@ -9,7 +9,9 @@ export class TokenExpiredError extends Error {
     this.name = 'TokenExpiredError';
   }
 }
-export async function getUserFromToken(token: string): Promise<User | null> {
+import type { RequestEvent } from '@sveltejs/kit';
+
+export async function getUserFromToken(token: string, event: RequestEvent): Promise<User | null> {
   console.log('getUserFromToken called with token:', token);
   try {
     const rawSecret = env.STRAPI_JWT_SECRET;
@@ -25,6 +27,7 @@ export async function getUserFromToken(token: string): Promise<User | null> {
     const userId = (payload as any).id;
     // fetch full user record from Strapi
     console.log('fetching full user with ID:', userId);
+    const strapi = getStrapiClient(event);
     const fullUserResponse = await strapi.collection('users').findOne(userId);
     console.log('fullUserResponse from Strapi:', fullUserResponse);
     const fullUser = fullUserResponse as unknown as User;
