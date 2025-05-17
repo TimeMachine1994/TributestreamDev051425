@@ -10,7 +10,9 @@ export async function createUser(data: User, event: RequestEvent) {
 
 export async function getUserById(id: string, event: RequestEvent) {
   const strapi = getStrapiClient(event);
-  const entry = await strapi.collection('users').findOne(id);
+  const entry = await strapi.collection('users').findOne(id, {
+    populate: ['role']
+  });
   return entry;
 }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminPortal from '$lib/components/dashboard/AdminPortal.svelte';
   import ContributorPortal from '$lib/components/dashboard/ContributorPortal.svelte';
   import FuneralDirectorPortal from '$lib/components/dashboard/FuneralDirectorPortal.svelte';
   import FamilyContactPortal from '$lib/components/dashboard/FamilyContactPortal.svelte';
@@ -48,16 +49,18 @@
           </p>
         </div>
 
-        {#if data.user.role === 'contributor'}
+        {#if data.user.role?.type === 'admin'}
+          <AdminPortal user={data.user} />
+        {:else if data.user.role?.type === 'contributor'}
           <ContributorPortal tributes={data.tributes} />
-        {:else if data.user.role === 'funeral-director'}
+        {:else if data.user.role?.type === 'funeral-director'}
           <FuneralDirectorPortal tributes={data.tributes} />
-        {:else if data.user.role === 'family-contact'}
+        {:else if data.user.role?.type === 'family-contact'}
           <FamilyContactPortal tributes={data.tributes} />
-        {:else if data.user.role === 'producer'}
+        {:else if data.user.role?.type === 'producer'}
           <ProducerPortal tributes={data.tributes} />
         {:else}
-          <p class="text-red-600">Unknown role: {data.user.role}</p>
+          <p class="text-red-600">Unknown role: {JSON.stringify(data.user.role)}</p>
         {/if}
       </div>
     </div>
