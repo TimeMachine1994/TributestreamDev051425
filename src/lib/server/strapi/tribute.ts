@@ -32,11 +32,16 @@ export async function createTribute(data: Partial<Tribute>, jwt: string): Promis
 
 export async function getTributeById(id: string | number, event: RequestEvent) {
 	console.log('🔵 Fetching tribute by ID:', id);
-	const strapi = getStrapiClient(event);
-	const res = await strapi.collection('tributes').findOne(String(id), {
-		populate: 'deep'
-	});
-	return res.data;
+	try {
+		const strapi = getStrapiClient(event);
+		const res = await strapi.collection('tributes').findOne(String(id), {
+			populate: '*'
+		});
+		return res.data;
+	} catch (err) {
+		console.error('❌ Error fetching tribute by ID:', err);
+		return null;
+	}
 }
 
 export async function getTributeBySlug(slug: string, event: RequestEvent) {
@@ -44,7 +49,7 @@ export async function getTributeBySlug(slug: string, event: RequestEvent) {
 	const strapi = getStrapiClient(event);
 	const res = await strapi.collection('tributes').find({
 		filters: { slug: { $eq: slug } },
-		populate: 'deep'
+		populate: '*'
 	});
 	return res.data?.[0] ?? null;
 }

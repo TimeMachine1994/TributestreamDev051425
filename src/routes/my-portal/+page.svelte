@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-  <title>{data.user ? 'My Tributes' : 'Login'} | Tributestream</title>
+  <title>{data?.user?.name ? 'My Tributes' : 'Login'} | Tributestream</title>
   <meta name="description" content="Access your Tributestream account and manage your tributes." />
 </svelte:head>
 
@@ -44,24 +44,40 @@
 
         <div class="mb-8">
           <p class="text-surface-950">
-            Welcome back, <span class="font-medium text-surface-950">{data.user.name}</span>.
-            Here are the tributes associated with your account.
+            {#if data?.user?.name}
+              Welcome back, <span class="font-medium text-surface-950">{data.user.name}</span>.
+              Here are the tributes associated with your account.
+            {:else}
+              Welcome to Tributestream.
+            {/if}
           </p>
         </div>
 
-        {#if data.user.role?.type === 'admin'}
-          <AdminPortal user={data.user} />
-        {:else if data.user.role?.type === 'contributor'}
-          <ContributorPortal tributes={data.tributes} />
-        {:else if data.user.role?.type === 'funeral-director'}
-          <FuneralDirectorPortal tributes={data.tributes} />
-        {:else if data.user.role?.type === 'family-contact'}
-          <FamilyContactPortal tributes={data.tributes} />
-        {:else if data.user.role?.type === 'producer'}
-          <ProducerPortal tributes={data.tributes} />
-        {:else}
-          <p class="text-red-600">Unknown role: {JSON.stringify(data.user.role)}</p>
-        {/if}
+        <svelte:boundary>
+          {#if data?.user?.role?.type === 'admin'}
+            <AdminPortal user={data.user} />
+          {:else if data?.user?.role?.type === 'contributor'}
+            <ContributorPortal tributes={data.tributes} />
+          {:else if data?.user?.role?.type === 'funeral-director'}
+            <FuneralDirectorPortal tributes={data.tributes} />
+          {:else if data?.user?.role?.type === 'family-contact'}
+            <FamilyContactPortal tributes={data.tributes} />
+          {:else if data?.user?.role?.type === 'producer'}
+            <ProducerPortal tributes={data.tributes} />
+          {:else if data?.user}
+            <p class="text-red-600">Unknown role: {JSON.stringify(data.user.role)}</p>
+          {:else}
+            <p class="text-red-600">No user data available.</p>
+          {/if}
+
+          {#snippet failed(error, reset)}
+            <div class="text-red-700 bg-red-100 border border-red-300 p-4 rounded">
+              <p class="font-semibold">Something went wrong loading your portal.</p>
+              <p class="text-sm mt-2">{error.message}</p>
+              <button class="btn mt-4" onclick={reset}>Try again</button>
+            </div>
+          {/snippet}
+        </svelte:boundary>
       </div>
     </div>
   </div>

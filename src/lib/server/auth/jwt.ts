@@ -28,7 +28,9 @@ export async function getUserFromToken(token: string, event: RequestEvent): Prom
     // fetch full user record from Strapi
     console.log('fetching full user with ID:', userId);
     const strapi = getStrapiClient(event);
-    const fullUserResponse = await strapi.collection('users').findOne(userId);
+    const fullUserResponse = await strapi.collection('users').findOne(userId, {
+      populate: ['role']
+    });
     console.log('fullUserResponse from Strapi:', fullUserResponse);
     const fullUser = fullUserResponse as unknown as User;
     console.log('mapped fullUser:', fullUser);

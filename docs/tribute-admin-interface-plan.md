@@ -1,70 +1,48 @@
-# Tribute Administration Interface Implementation Plan
+# 🧩 Tribute Admin Interface Enhancement Plan
 
-This document outlines the steps to implement a "Review Content" feature in the Admin Portal, enabling tribute administration with search, listing, and editing capabilities using SvelteKit 5 runes and server load functions.
+## Goal
 
----
+Enable the `/my-portal/admin/tributes` route to:
+- Display a searchable list of tributes
+- Link to an edit page for each tribute
 
-## 1. Update Admin Portal UI
-
-**File:** `src/lib/components/my-portal/AdminPortal.svelte`
-
-- Add a button or link labeled "Review Tribute Content"
-- Route it to `/my-portal/tributes`
-
-```svelte
-<a href="/my-portal/tributes" class="button">📋 Review Tribute Content</a>
-```
+Enable the `/my-portal/admin/tributes/edit-tribute-[id]` route to:
+- Display a form with all editable tribute fields
+- Submit updates to the backend
 
 ---
 
-## 2. Create Tribute Admin Page
+## Phase 1: ✅ Confirm Tribute Listing Functionality
 
-**Files:**
-- `src/routes/my-portal/tributes/+page.svelte`
-- `src/routes/my-portal/tributes/+page.server.ts`
+- [x] Confirm `+page.server.ts` loads tributes via `searchTributes()`
+- [x] Confirm `+page.svelte` renders tribute list using `<TributeCard>`
+- [x] Confirm search input updates query param and triggers reload
+- [x] Confirm each tribute has an "Edit" button linking to the edit page
 
-### +page.server.ts
-- Fetch tribute data from Strapi using `getAllTributes()` from `src/lib/server/strapi/tribute.ts`
-- Accept optional search query via `url.searchParams.get('q')`
-
-### +page.svelte
-- Use `$state` for search input
-- Use `$effect` to debounce and trigger search
-- Display tribute list using `tribute-card.svelte` or a new `TributeAdminList.svelte`
-- Add "Edit" button linking to `/my-portal/tributes/[id]/edit`
+📝 Status: Already implemented and functional
 
 ---
 
-## 3. Create Tribute Edit Page
+## Phase 2: 🛠️ Improve Tribute Edit Page
 
-**Files:**
-- `src/routes/my-portal/tributes/[id]/edit/+page.svelte`
-- `src/routes/my-portal/tributes/[id]/edit/+page.server.ts`
+### 2.1: Ensure All Fields Are Editable
+- [ ] Confirm `TributeForm.svelte` supports all editable fields (name, dates, obituary, etc.)
+- [ ] If not, update `TributeForm.svelte` to include missing fields
+- [ ] Ensure form uses two-way binding and emits `submit` event with updated data
 
-### +page.server.ts
-- Load tribute by ID from Strapi
-
-### +page.svelte
-- Use `tribute-form.svelte` to edit tribute
-- Submit updates via form action or API
-
----
- 
-
-## 5. Component Reuse
-
-- Reuse `tribute-card.svelte` for display
-- Reuse `tribute-form.svelte` for editing
-- Consider creating:
-  - `TributeAdminList.svelte`
-  - `SearchBar.svelte`
+### 2.2: Improve Edit Page UX
+- [ ] Add heading and navigation (e.g., "Back to list")
+- [ ] Show loading/error states if tribute fails to load
+- [ ] Show success/failure feedback after submission
 
 ---
 
-## 6. Permissions
+## Phase 3: 🔄 Wire Up Tribute Update API
 
-- Ensure only admin users can access `/admin/tributes` and `/admin/tributes/[id]/edit`
-- Use `load` guards or server-side checks
+- [ ] Confirm `/api/tributes/[id]/+server.ts` supports PUT requests
+- [ ] Ensure it validates and updates tribute data in Strapi
+- [ ] Add error handling and validation feedback in edit page
 
 ---
+
  

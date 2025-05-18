@@ -19,6 +19,9 @@
     phone_number: '',
     custom_html: '',
     status: 'draft',
+    birth_date: '',
+    death_date: '',
+    obituary: '',
     ...tribute
   };
   
@@ -119,6 +122,41 @@
           <option value={option.value}>{option.label}</option>
         {/each}
       </select>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Life Dates</h2>
+    <div class="form-group">
+      <label for="birth_date">Birth Date</label>
+      <input
+        type="date"
+        id="birth_date"
+        bind:value={formData.birth_date}
+        disabled={isSubmitting}
+      />
+    </div>
+    <div class="form-group">
+      <label for="death_date">Death Date</label>
+      <input
+        type="date"
+        id="death_date"
+        bind:value={formData.death_date}
+        disabled={isSubmitting}
+      />
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Obituary</h2>
+    <div class="form-group">
+      <label for="obituary">Obituary</label>
+      <textarea
+        id="obituary"
+        bind:value={formData.obituary}
+        rows="8"
+        disabled={isSubmitting}
+      ></textarea>
     </div>
   </div>
   
