@@ -1,8 +1,10 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect, fail} from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { generateSecurePassword } from '$lib/utils/auth-helpers';
 import { validateSimplifiedMemorialForm } from '$lib/utils/form-validation';
 import { createTributeSlug } from '$lib/utils/string-helpers';
+import client from '$lib/strapiClient';
+
 
 export const actions = {
     /**

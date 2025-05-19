@@ -51,7 +51,7 @@ This document outlines the implementation of the dual-function homepage interfac
 The search functionality uses progressive enhancement with SvelteKit's form actions:
 
 ```typescript
-// Server
+// Server -- NOT CORRECT
 export const actions = {
   search: async ({ request, fetch }) => {
     const formData = await request.formData();

@@ -6,7 +6,9 @@ declare global {
 			user: import('$lib/server/types').User | null;
 			strapi: any;
 		}
-		
+		interface Tributes {
+			
+		}
 		interface PageState {
 			showModal?: boolean;
 			selected?: any;
