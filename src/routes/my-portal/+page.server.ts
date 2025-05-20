@@ -1,16 +1,17 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { getUserFromJwt } from '$lib/server/auth/';
+import { getUserFromJwt } from '$lib/utils/auth';
 import { getUserById } from '$lib/server/strapi/user';
-import client from '$lib/server/strapi/strapiClient';
+import { getStrapiClient } from '$lib/server/strapi/client';
 
- export const load: PageServerLoad = async (event) => {
+export const load: PageServerLoad = async (event) => {
 	const { fetch, cookies } = event;
 	
 	console.log('[my-portal/+page.server] Fetching tribute data from /api/tributes');
-	const tributes = client.collection('tributes');
-
-  
+	const strapiClient = getStrapiClient(event);
+	const tributes = await strapiClient.collection('tributes').find();
+console.debug('[my-portal/+page.server] Raw tribute response:', tributes);
+	
 	console.log('[my-portal/+page.server] tributeData:', tributes);
 
 	const jwt = cookies.get('jwt');
@@ -23,7 +24,7 @@ import client from '$lib/server/strapi/strapiClient';
 	}
 
 	return {
-		tributes,
+		tributes: tributes.data,
 		user
 	};
 };

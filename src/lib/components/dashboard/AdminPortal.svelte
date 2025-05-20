@@ -16,9 +16,20 @@
 	}
 
 	/** --- state ---------------------------------------------------- */
-	const tributes      = writable<Tribute[]>([]);
+	export let tributes: Tribute[] = []; // Default empty array (for type safety)
+	export let user: { id: string; name: string; email: string; role: string };
+	const tributesStore = writable<Tribute[]>(tributes);
+
+	// Update store when props change
+	$: {
+		console.log('🎭 AdminPortal: tributes prop changed', tributes);
+		tributesStore.set(tributes);
+	}
+
+	// Log filtered tributes
+	$: console.log('🔍 AdminPortal: filtered tributes', $filtered);
 	const search        = writable('');
-	const filtered      = derived([tributes, search], ([$t, $s]) =>
+	const filtered      = derived([tributesStore, search], ([$t, $s]) =>
 		$t
 			.filter(tr => tr.name.toLowerCase().includes($s.toLowerCase()))
 			.sort((a, b) => a.name.localeCompare(b.name))
@@ -28,13 +39,7 @@
 	let form: Partial<Tribute>   = {};
 
 	/** --- init ----------------------------------------------------- */
-	onMount(async () => {
-		const res = await fetch('/api/tributes');
-		if (res.ok) {
-			const { data } = await res.json();   // adjust to your Strapi shape
-			tributes.set(data);
-		}
-	});
+	// removed fetch call; tributes are passed in as props
 
 	/** --- ui handlers --------------------------------------------- */
 	function open(tr: Tribute) {
@@ -48,17 +53,43 @@
 
 	async function save() {
 		if (!selected) return;
-		const res = await fetch(`/api/tributes/${selected.id}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ data: form })
-		});
-		if (res.ok) {
-			const { data } = await res.json();
-			tributes.update(list => list.map(t => (t.id === data.id ? data : t)));
-			close();
-		} else {
-			console.error('Failed to update tribute');
+		try {
+			const { id, createdAt, updatedAt, ...safeForm } = form;
+			console.log('🚀 Sending tribute update request:', safeForm);
+			const res = await fetch(`/api/tributes/${selected.id}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ data: safeForm }),
+				credentials: 'include' // Ensure cookies are sent
+			});
+			
+			if (res.ok) {
+				const { tribute } = await res.json();
+				tributesStore.update(list => list.map(t => (t.id === tribute.id ? tribute : t)));
+				close();
+				console.log('✅ Tribute updated successfully:', tribute);
+			} else {
+				// Handle the error based on status code
+				if (res.status === 401) {
+					console.error('🔒 Authentication error: Not authorized to update tribute');
+					alert('You are not authorized to update this tribute. Your session may have expired. Please log in again.');
+				} else {
+					try {
+						// Try to parse error as JSON first
+						const errorData = await res.json();
+						console.error('❌ Error updating tribute', errorData);
+						alert(`Failed to update tribute: ${errorData.message || 'Unknown error'}`);
+					} catch (parseErr) {
+						// Fallback to raw text if not JSON
+						const errorText = await res.text();
+						console.error('❌ Error updating tribute', res.status, errorText);
+						alert(`Failed to update tribute (${res.status}): ${errorText || res.statusText}`);
+					}
+				}
+			}
+		} catch (err) {
+			console.error('🚨 Exception updating tribute:', err);
+			alert('Error connecting to server. Please check your network connection and try again.');
 		}
 	}
 </script>

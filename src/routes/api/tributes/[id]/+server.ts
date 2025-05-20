@@ -3,21 +3,24 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getTributeById, updateTribute, deleteTribute } from '$lib/server/strapi/tribute';
 import { getUserFromJwt } from '$lib/utils/auth';
-const requireUser = async (cookies: import('@sveltejs/kit').Cookies) => {
-const jwt = cookies.get('jwt');
-if (!jwt) throw json({ message: 'Authentication required' }, { status: 401 });
-const user = await getUserFromJwt(jwt);
-if (!user) throw json({ message: 'Invalid token' }, { status: 401 });
-return user;
+import type { RequestEvent } from '@sveltejs/kit';
+
+const requireUser = async (event: RequestEvent) => {
+  const jwt = event.cookies.get('jwt');
+  if (!jwt) throw json({ message: 'Authentication required' }, { status: 401 });
+  const user = await getUserFromJwt(jwt, event);
+  if (!user) throw json({ message: 'Invalid token' }, { status: 401 });
+  return user;
 };
 /**
  * GET handler for a specific tribute by ID
  * Forwards the request to the WordPress API and returns the response
  */
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async (event) => {
+	const { params } = event;
 	try {
 		console.log(`📥 GET tribute ${params.id}`);
-		const tribute = await getTributeById(params.id);
+		const tribute = await getTributeById(params.id, event);
 		if (!tribute) return json({ message: 'Tribute not found' }, { status: 404 });
 		return json({ tribute });
 	} catch (err) {
@@ -30,11 +33,12 @@ export const GET: RequestHandler = async ({ params }) => {
  * PUT handler for updating a specific tribute by ID
  * Forwards the request to the WordPress API and returns the response
  */
-export const PUT: RequestHandler = async ({ params, request, cookies }) => {
+export const PUT: RequestHandler = async (event) => {
+	const { params, request } = event;
 	try {
 		console.log(`✏️ PUT tribute ${params.id}`);
-		const user = await requireUser(cookies);
-		const tribute = await getTributeById(params.id);
+		const user = await requireUser(event);
+		const tribute = await getTributeById(params.id, event);
 		if (!tribute) return json({ message: 'Tribute not found' }, { status: 404 });
 
 		if (tribute.user?.id !== user.id && user.role?.type !== 'admin') {
@@ -44,7 +48,7 @@ export const PUT: RequestHandler = async ({ params, request, cookies }) => {
 		const data = await request.json();
 		delete data.user_id;
 
-		const updated = await updateTribute(params.id, data);
+		const updated = await updateTribute(params.id, data, event);
 		return json({ tribute: updated });
 	} catch (err) {
 		console.error('❌ Error updating tribute', err);
@@ -56,18 +60,19 @@ export const PUT: RequestHandler = async ({ params, request, cookies }) => {
  * DELETE handler for removing a specific tribute by ID
  * Forwards the request to the WordPress API and returns the response
  */
-export const DELETE: RequestHandler = async ({ params, cookies }) => {
+export const DELETE: RequestHandler = async (event) => {
+	const { params } = event;
 	try {
 		console.log(`🗑️ DELETE tribute ${params.id}`);
-		const user = await requireUser(cookies);
-		const tribute = await getTributeById(params.id);
+		const user = await requireUser(event);
+		const tribute = await getTributeById(params.id, event);
 		if (!tribute) return json({ message: 'Tribute not found' }, { status: 404 });
 
 		if (tribute.user?.id !== user.id && user.role?.type !== 'admin') {
 			return json({ message: 'Forbidden' }, { status: 403 });
 		}
 
-		await deleteTribute(params.id);
+		await deleteTribute(params.id, event);
 		return json({ success: true });
 	} catch (err) {
 		console.error('❌ Error deleting tribute', err);

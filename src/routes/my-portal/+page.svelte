@@ -5,7 +5,7 @@
   import FamilyContactPortal from '$lib/components/dashboard/FamilyContactPortal.svelte';
   import ProducerPortal from '$lib/components/dashboard/ProducerPortal.svelte';
   import PageBackground from '$lib/components/ui/PageBackground.svelte';
-  import type { Tribute } from '$lib/server/types';
+  import type { Tribute } from '$lib/types/tribute';
 
   interface PageData {
     user: { id: string; name: string; email: string; role: string };
@@ -55,7 +55,7 @@
 
         <svelte:boundary>
           {#if data?.user?.role?.type === 'admin'}
-            <AdminPortal user={data.user} />
+            <AdminPortal user={data.user} tributes={data.tributes} />
           {:else if data?.user?.role?.type === 'contributor'}
             <ContributorPortal tributes={data.tributes} />
           {:else if data?.user?.role?.type === 'funeral-director'}

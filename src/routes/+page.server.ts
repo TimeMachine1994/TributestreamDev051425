@@ -3,7 +3,7 @@ import type { Actions } from './$types';
 import { generateSecurePassword } from '$lib/utils/auth-helpers';
 import { validateSimplifiedMemorialForm } from '$lib/utils/form-validation';
 import { createTributeSlug } from '$lib/utils/string-helpers';
-import client from '$lib/strapiClient';
+import { getStrapiClient } from '$lib/server/strapi/client';
 
 
 export const actions = {
@@ -211,7 +211,11 @@ export const actions = {
             
             console.log('📦 Sending enhanced tribute payload');
             
-            const tributeResponse = await fech //creat etribute with strapi
+            const tributeResponse = await fetch('/api/tributes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(tributePayload)
+            });
             
             // Handle tribute creation errors
             if (!tributeResponse.ok) {
@@ -235,13 +239,13 @@ export const actions = {
                 // Create comprehensive emailFormData for enhanced email
                 const emailFormData = {
                     // Deceased information
-                    deceasedFirstName: firstName,
-                    deceasedLastName: lastName,
+                    deceasedFirstName: data.lovedOneName.split(' ')[0],
+                    deceasedLastName: data.lovedOneName.split(' ').slice(1).join(' ') || '',
                     deceasedFullName: data.lovedOneName,
                     
                     // Creator information
-                    directorFirstName: creatorFirstName,
-                    directorLastName: creatorLastName,
+                    directorFirstName: data.creatorFullName.split(' ')[0],
+                    directorLastName: data.creatorFullName.split(' ').slice(1).join(' ') || '',
                     directorFullName: data.creatorFullName,
                     
                     // Contact information
