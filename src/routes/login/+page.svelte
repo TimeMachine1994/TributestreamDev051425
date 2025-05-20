@@ -1,25 +1,11 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  export let data: import('./$types').PageData;
-  let username = '';
-  let password = '';
-  let loading = false;
-  let error: string | null = data.error ?? null;
-  // Handle form submission
-  async function handleLogin(event: SubmitEvent) {
-    const formData = new FormData(event.currentTarget as HTMLFormElement);
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      body: formData
-    });
 
-    if (res.ok) {
-      goto('/my-portal');
-    } else {
-      const result = await res.json();
-      error = result?.message || 'Login failed';
-    }
-  }
+  let email = $state('');
+  let password = $state('');
+  let loading = $state(false);
+  let { data } = $props<{ data: { error?: string } }>();
+  let error = $state<string | null>(data.error ?? null);
 </script>
 
 <svelte:head>
@@ -30,43 +16,60 @@
 <div class="login-container">
   <div class="login-card">
     <h1>Login</h1>
-    
-    <form method="POST" use:enhance={({ result }) => { if (result.type === 'failure') error = result.data?.error; }}>
+
+    <form method="POST" use:enhance={({ formData, result }) => {
+      console.log('🚀 Form submitted with:', Object.fromEntries(formData));
+      loading = true;
+
+      return async () => {
+        loading = false;
+        if (result.type === 'failure') {
+          console.log('❌ Login failed:', result);
+          error = result.data?.error;
+        } else {
+          console.log('✅ Login success, redirecting...');
+        }
+      };
+    }}>
       {#if error}
         <div class="error-message">
           {error}
         </div>
       {/if}
-      
+
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="email">Email</label>
         <input 
-          type="text" 
-          id="username" 
-          bind:value={username} 
+          type="email" 
+          id="email" 
+          name="email"
+          bind:value={email} 
           disabled={loading}
-          placeholder="Enter your username"
-          autocomplete="username"
+          placeholder="Enter your email"
+          autocomplete="email"
+          required
         />
       </div>
-      
+
       <div class="form-group">
         <label for="password">Password</label>
         <input 
           type="password" 
           id="password" 
+          name="password"
           bind:value={password} 
           disabled={loading}
           placeholder="Enter your password"
           autocomplete="current-password"
+          required
         />
       </div>
-      
+
       <button type="submit" class="login-button" disabled={loading}>
         {loading ? 'Logging in...' : 'Login'}
       </button>
     </form>
-    
+
     <div class="links">
       <a href="/forgot-password">Forgot password?</a>
       <a href="/register">Create an account</a>
@@ -79,38 +82,35 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
-    background-color: #f5f5f5;
+    min-height: 80vh;
+    padding: 1rem;
   }
-  
+
   .login-card {
-    background-color: white;
+    background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 2rem;
     width: 100%;
     max-width: 400px;
   }
-  
+
   h1 {
-    font-size: 1.8rem;
-    color: #333;
+    margin-top: 0;
     margin-bottom: 1.5rem;
     text-align: center;
   }
-  
+
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
-  
+
   label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #555;
   }
-  
+
   input {
     width: 100%;
     padding: 0.75rem;
@@ -118,57 +118,37 @@
     border-radius: 4px;
     font-size: 1rem;
   }
-  
-  input:focus {
-    outline: none;
-    border-color: #4a90e2;
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-  }
-  
+
   .login-button {
     width: 100%;
     padding: 0.75rem;
-    background-color: #4a90e2;
+    background-color: #4f46e5;
     color: white;
-    border: none;
-    border-radius: 4px;
     font-size: 1rem;
     font-weight: 500;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    margin-top: 1rem;
   }
-  
-  .login-button:hover {
-    background-color: #3a80d2;
-  }
-  
+
   .login-button:disabled {
-    background-color: #a0c0e8;
+    opacity: 0.7;
     cursor: not-allowed;
   }
-  
-  .error-message {
-    background-color: #ffebee;
-    color: #e53935;
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-  }
-  
+
   .links {
     display: flex;
     justify-content: space-between;
     margin-top: 1.5rem;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
   }
-  
-  .links a {
-    color: #4a90e2;
-    text-decoration: none;
-  }
-  
-  .links a:hover {
-    text-decoration: underline;
+
+  .error-message {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
   }
 </style>

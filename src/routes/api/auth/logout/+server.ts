@@ -1,13 +1,13 @@
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ cookies }) => {
-	cookies.set('jwt', '', {
-		path: '/',
-		expires: new Date(0)
-	});
+import { redirect } from '@sveltejs/kit';
 
-	return new Response(JSON.stringify({ message: 'Logged out' }), {
-		status: 200,
-		headers: { 'Content-Type': 'application/json' }
-	});
+export const POST: RequestHandler = async ({ cookies }) => {
+	// Clear authentication cookies
+	cookies.delete('jwt', { path: '/' });
+	cookies.delete('user', { path: '/' });
+	cookies.delete('jwt_expires', { path: '/' });
+
+	// Redirect to login page
+	throw redirect(303, '/login');
 };

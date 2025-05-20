@@ -58,9 +58,9 @@
             <AdminPortal user={data.user} tributes={data.tributes} />
           {:else if data?.user?.role?.type === 'contributor'}
             <ContributorPortal tributes={data.tributes} />
-          {:else if data?.user?.role?.type === 'funeral-director'}
+          {:else if data?.user?.role?.type === 'funeral_director' || data?.user?.role?.type === 'funeral-director'}
             <FuneralDirectorPortal tributes={data.tributes} />
-          {:else if data?.user?.role?.type === 'family-contact'}
+          {:else if data?.user?.role?.type === 'family_contact' || data?.user?.role?.type === 'family-contact'}
             <FamilyContactPortal tributes={data.tributes} />
           {:else if data?.user?.role?.type === 'producer'}
             <ProducerPortal tributes={data.tributes} />

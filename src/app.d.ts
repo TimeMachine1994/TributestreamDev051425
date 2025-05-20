@@ -1,24 +1,16 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
-declare global {
-	namespace App {
-		interface Locals {
-			user: import('$lib/types/types').User | null;
-			strapi: any;
-		}
-		interface Tributes {
-			
-		}
-		interface PageState {
-			showModal?: boolean;
-			selected?: any;
-		}
-		
-		interface Error {
-			code?: string;
-			message: string;
-		}
-	}
-}
+/// <reference types="@sveltejs/kit" />
 
-export {};
+declare namespace App {
+  interface Locals {
+    user: {
+      id: string;
+      name?: string;
+      email: string;
+      role?: {
+        id: string;
+        name: string;
+        type: string;
+      };
+    } | null;
+  }
+}
