@@ -1,5 +1,5 @@
 import { getStrapiClient } from './client';
-import type { User } from '../types';
+import type { User } from '../../types/types';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function createUser(data: User, event: RequestEvent) {

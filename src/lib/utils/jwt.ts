@@ -1,6 +1,6 @@
 import { jwtVerify, errors } from 'jose';
 import { env } from '$env/dynamic/private';
-import type { User } from '$lib/server/types';
+import type { User } from '$lib/types/types';
 import { getStrapiClient } from '$lib/server/strapi/client';
 
 export class TokenExpiredError extends Error {

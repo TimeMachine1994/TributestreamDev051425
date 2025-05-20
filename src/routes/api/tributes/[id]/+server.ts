@@ -2,7 +2,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getTributeById, updateTribute, deleteTribute } from '$lib/server/strapi/tribute';
-import { getUserFromJwt } from '$lib/server/utils/auth';
+import { getUserFromJwt } from '$lib/utils/auth';
 const requireUser = async (cookies: import('@sveltejs/kit').Cookies) => {
 const jwt = cookies.get('jwt');
 if (!jwt) throw json({ message: 'Authentication required' }, { status: 401 });

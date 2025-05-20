@@ -3,7 +3,7 @@
 declare global {
 	namespace App {
 		interface Locals {
-			user: import('$lib/server/types').User | null;
+			user: import('$lib/types/types').User | null;
 			strapi: any;
 		}
 		interface Tributes {

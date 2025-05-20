@@ -2,7 +2,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getTributeBySlug } from '$lib/server/strapi/tribute';
-import { logger } from '$lib/server/utils/logger';
+import { logger } from '$lib/utils/logger';
 // Base WordPress API URL
 
 /**

@@ -1,4 +1,4 @@
-import type { FdFormInput, Tribute, User, FuneralHome } from '$lib/server/types';
+import type { FdFormInput, Tribute, User, FuneralHome } from '$lib/types/types';
 
 /**
  * Processes an FdFormInput to create a Tribute and associated User.

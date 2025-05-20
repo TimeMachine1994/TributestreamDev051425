@@ -1,4 +1,4 @@
-import { getUserFromToken as _getUserFromJwt } from '$lib/server/auth/jwt';
+import { getUserFromToken as _getUserFromJwt } from '$lib/utils/jwt';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function getUserFromJwt(token: string, event: RequestEvent) {

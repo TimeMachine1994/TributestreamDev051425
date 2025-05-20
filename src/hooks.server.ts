@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { getUserFromJwt } from '$lib/server/utils/auth';
+import { getUserFromJwt } from '$lib/utils/auth';
 
 export const handle: Handle = async ({ event, resolve }) => {
     console.log('hooks.handle: incoming cookie header:', event.request.headers.get('cookie'));
