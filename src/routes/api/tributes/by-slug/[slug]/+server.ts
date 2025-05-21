@@ -2,18 +2,19 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getTributeBySlug } from '$lib/server/strapi/tribute';
-import { logger } from '$lib/utils/logger';
+import * as logger from '$lib/utils/logger';
 // Base WordPress API URL
 
 /**
  * GET handler for fetching a tribute by slug
  * Forwards the request to the WordPress API and returns the response
  */
-export const GET: RequestHandler = async ({ params }) => {
-	logger.info(`📥 [GET] /api/tributes/by-slug/${params.slug}`);
+export const GET: RequestHandler = async (event) => {
+ const { params } = event;
+ logger.info(`📥 [GET] /api/tributes/by-slug/${params.slug}`);
 
-	try {
-		const tribute = await getTributeBySlug(params.slug);
+ try {
+ 	const tribute = await getTributeBySlug(params.slug, event);
 
 		if (!tribute) {
 			logger.warn(`⚠️ Tribute not found for slug: ${params.slug}`);

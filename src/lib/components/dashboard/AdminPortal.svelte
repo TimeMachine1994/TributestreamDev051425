@@ -56,6 +56,8 @@
 		try {
 			const { id, createdAt, updatedAt, ...safeForm } = form;
 			console.log('🚀 Sending tribute update request:', safeForm);
+			// Note: We wrap the data in a 'data' property for Strapi format compatibility
+			// The /api/tributes/[id] endpoint handles both formats (with or without 'data' wrapper)
 			const res = await fetch(`/api/tributes/${selected.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },

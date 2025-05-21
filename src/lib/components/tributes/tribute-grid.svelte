@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TributeCard from './tribute-card.svelte';
+  import EditableTributeCard from './editable-tribute-card.svelte';
   import type { Tribute } from '$lib/types/tribute';
 
   // Props
@@ -10,6 +10,30 @@
 
   // Default value for isLoading
   isLoading = isLoading ?? false;
+  
+  // Log tribute info and filter out any invalid tributes
+  console.log('🌟 Tribute Grid rendering with', tributes?.length || 0, 'tributes');
+  
+  // Debug the structure of the first tribute
+  if (tributes && tributes.length > 0) {
+    console.log('🏆 First tribute structure:', JSON.stringify(tributes[0], null, 2));
+  }
+  
+  tributes = tributes?.filter((tribute: Tribute) => {
+    if (!tribute) {
+      console.warn('❌ Found null/undefined tribute');
+      return false;
+    }
+    if (!tribute.id) {
+      console.warn('❌ Found tribute with no ID:', tribute);
+      return false;
+    }
+    if (!tribute.attributes) {
+      console.warn('❌ Found tribute with no attributes:', tribute.id);
+      return false;
+    }
+    return true;
+  }) || [];
 </script>
 
 <div class="w-full">
@@ -28,8 +52,10 @@
     </div>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each tributes as tribute, index (tribute.id ?? index)}
-        <TributeCard {tribute} />
+      {#each tributes as tribute, index (tribute?.id ?? index)}
+        {#if tribute}
+          <EditableTributeCard {tribute} />
+        {/if}
       {/each}
     </div>
   {/if}
