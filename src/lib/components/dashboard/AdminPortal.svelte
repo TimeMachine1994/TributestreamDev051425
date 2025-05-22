@@ -52,47 +52,7 @@
 	}
 
 	async function save() {
-		if (!selected) return;
-		try {
-			const { id, createdAt, updatedAt, ...safeForm } = form;
-			console.log('🚀 Sending tribute update request:', safeForm);
-			// Note: We wrap the data in a 'data' property for Strapi format compatibility
-			// The /api/tributes/[id] endpoint handles both formats (with or without 'data' wrapper)
-			const res = await fetch(`/api/tributes/${selected.id}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ data: safeForm }),
-				credentials: 'include' // Ensure cookies are sent
-			});
-			
-			if (res.ok) {
-				const { tribute } = await res.json();
-				tributesStore.update(list => list.map(t => (t.id === tribute.id ? tribute : t)));
-				close();
-				console.log('✅ Tribute updated successfully:', tribute);
-			} else {
-				// Handle the error based on status code
-				if (res.status === 401) {
-					console.error('🔒 Authentication error: Not authorized to update tribute');
-					alert('You are not authorized to update this tribute. Your session may have expired. Please log in again.');
-				} else {
-					try {
-						// Try to parse error as JSON first
-						const errorData = await res.json();
-						console.error('❌ Error updating tribute', errorData);
-						alert(`Failed to update tribute: ${errorData.message || 'Unknown error'}`);
-					} catch (parseErr) {
-						// Fallback to raw text if not JSON
-						const errorText = await res.text();
-						console.error('❌ Error updating tribute', res.status, errorText);
-						alert(`Failed to update tribute (${res.status}): ${errorText || res.statusText}`);
-					}
-				}
-			}
-		} catch (err) {
-			console.error('🚨 Exception updating tribute:', err);
-			alert('Error connecting to server. Please check your network connection and try again.');
-		}
+	 
 	}
 </script>
 

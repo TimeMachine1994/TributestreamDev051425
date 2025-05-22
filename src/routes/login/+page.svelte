@@ -17,17 +17,29 @@
   <div class="login-card">
     <h1>Login</h1>
 
-    <form method="POST" use:enhance={({ formData, result }) => {
+    <form method="POST" use:enhance={({ formData }) => {
       console.log('🚀 Form submitted with:', Object.fromEntries(formData));
       loading = true;
 
-      return async () => {
+      return async ({ result, update }) => {
         loading = false;
         if (result.type === 'failure') {
           console.log('❌ Login failed:', result);
           error = result.data?.error;
+        } else if (result.type === 'redirect') {
+          console.log('✅ Login success, redirecting to:', result.location);
+          await update(); // Apply the redirect
+        } else if (result.type === 'success') {
+          // This case is not expected from your current login server action,
+          // as it always throws a redirect on successful login.
+          console.log('✅ Login success (data returned):', result.data);
+          await update();
+        } else if (result.type === 'error') {
+          console.error('❌ Login error:', result.error);
+          error = result.error.message || 'An unexpected error occurred.';
         } else {
-          console.log('✅ Login success, redirecting...');
+          console.log('Login action returned unhandled result type:', result.type);
+          await update();
         }
       };
     }}>
