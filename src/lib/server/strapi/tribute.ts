@@ -1,4 +1,4 @@
-import type { Tribute } from '$lib/types/tribute';
+import type { Tribute, TributeAttributes } from '$lib/types/tribute';
 import { getStrapiClient } from './client';
 import type { RequestEvent } from '@sveltejs/kit';
 
@@ -120,9 +120,9 @@ export async function getTributeBySlug(slug: string, event: RequestEvent) {
 	}
 }
 
-export async function updateTribute(id: string | number, data: Partial<Tribute>, event: RequestEvent) {
+export async function updateTribute(id: string | number, data: Partial<TributeAttributes>, event: RequestEvent): Promise<Tribute> {
 	console.log('🟠 DEBUG: Updating tribute ID:', id, `(type: ${typeof id})`);
-	console.log('🟠 DEBUG: Update data:', JSON.stringify(data, null, 2));
+	console.log('🟠 DEBUG: Update data (attributes):', JSON.stringify(data, null, 2));
 	
 	console.log('🟠 DEBUG: Getting Strapi client');
 	const strapi = getStrapiClient(event);
@@ -133,9 +133,11 @@ export async function updateTribute(id: string | number, data: Partial<Tribute>,
 	
 	try {
 		console.log('🟠 DEBUG: About to call Strapi update API');
-		console.log('🟠 DEBUG: Full update payload:', JSON.stringify({ data }, null, 2));
+		// The 'data' object (Partial<TributeAttributes>) should be passed directly as the second argument.
+		// The Strapi client will handle wrapping it in a 'data' key if necessary for the API.
+		console.log('🟠 DEBUG: Payload being sent to Strapi client update method:', JSON.stringify(data, null, 2));
 		
-		const res = await strapi.collection('tributes').update(idStr, { data });
+		const res = await strapi.collection('tributes').update(idStr, data); // Pass 'data' directly
 		
 		console.log('🟠 DEBUG: Strapi update API call successful');
 		console.log('🟠 DEBUG: Raw response:', JSON.stringify(res, null, 2));
@@ -155,9 +157,24 @@ export async function updateTribute(id: string | number, data: Partial<Tribute>,
 		if (err && typeof err === 'object') {
 			console.error('🟠 DEBUG: Error object keys:', Object.keys(err));
 			
-			if ('response' in err) {
-				console.error('🟠 DEBUG: Strapi error response:',
-					JSON.stringify((err as any).response, null, 2));
+			if ('response' in err && (err as any).response instanceof Response) {
+				const strapiErrorResponse = (err as any).response as Response;
+				try {
+					const errorBody = await strapiErrorResponse.json();
+					console.error('🟠 DEBUG: Strapi error response body:', JSON.stringify(errorBody, null, 2));
+				} catch (e) {
+					console.error('🟠 DEBUG: Could not parse Strapi error response body as JSON. Status:', strapiErrorResponse.status, 'StatusText:', strapiErrorResponse.statusText);
+					// Fallback to text if JSON parsing fails
+					try {
+						const errorText = await strapiErrorResponse.text();
+						console.error('🟠 DEBUG: Strapi error response text:', errorText);
+					} catch (e2) {
+						console.error('🟠 DEBUG: Could not read Strapi error response as text.');
+					}
+				}
+			} else if ('response' in err) {
+				// If it's not a Response object, log it as is
+				console.error('🟠 DEBUG: Strapi error (unknown response type):', JSON.stringify((err as any).response, null, 2));
 			}
 			
 			if ('message' in err) {

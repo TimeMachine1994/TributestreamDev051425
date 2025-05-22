@@ -2,17 +2,27 @@
 	import { onMount } from 'svelte';
 	import { writable, derived } from 'svelte/store';
 	import { slide } from 'svelte/transition';
+	import { enhance } from '$app/forms'; // For progressive enhancement
+	// import { page } from '$app/stores'; // Not strictly needed if enhance callback handles all UI updates
 
 	/** --- types --------------------------------------------------- */
 	type Status = 'draft' | 'published' | 'archived';
-	interface Tribute {
-		id: number;
+
+	// Define the shape of the attributes object
+	interface TributeAttributes {
 		name: string;
-		description: string;
+		description?: string; // Optional
 		slug: string;
 		status: Status;
 		createdAt: string;
 		updatedAt: string;
+		// Add any other attributes that might be present
+	}
+
+	// Define the main Tribute type, expecting an attributes object
+	interface Tribute {
+		id: number;
+		attributes?: TributeAttributes; // Make attributes optional to handle the logged data
 	}
 
 	/** --- state ---------------------------------------------------- */
@@ -31,12 +41,23 @@
 	const search        = writable('');
 	const filtered      = derived([tributesStore, search], ([$t, $s]) =>
 		$t
-			.filter(tr => tr.name.toLowerCase().includes($s.toLowerCase()))
-			.sort((a, b) => a.name.localeCompare(b.name))
+			.filter(tr => 
+				tr.attributes && // Check if attributes exists
+				typeof tr.attributes.name === 'string' && 
+				tr.attributes.name.toLowerCase().includes($s.toLowerCase())
+			)
+			.sort((a, b) => {
+				const nameA = a.attributes?.name || ''; // Use optional chaining
+				const nameB = b.attributes?.name || ''; // Use optional chaining
+				return nameA.localeCompare(nameB);
+			})
 	);
 
 	let selected: Tribute | null = null;
-	let form: Partial<Tribute>   = {};
+	// Form should represent the editable fields, which are the attributes
+	let form: Partial<TributeAttributes> = {}; 
+	let formProcessing = false; // To disable button during submission
+	let formError: string | null = null;
 
 	/** --- init ----------------------------------------------------- */
 	// removed fetch call; tributes are passed in as props
@@ -44,16 +65,24 @@
 	/** --- ui handlers --------------------------------------------- */
 	function open(tr: Tribute) {
 		selected = tr;
-		form     = { ...tr };
+		// Populate form from attributes if they exist, otherwise use defaults or empty
+		form = tr.attributes ? { ...tr.attributes } : { name: '', slug: '', status: 'draft', createdAt: '', updatedAt: '' };
+		formError = null; // Clear previous errors
+		formProcessing = false; // Reset processing state
 	}
 
 	function close() {
 		selected = null;
+		formError = null;
+		formProcessing = false;
 	}
 
-	async function save() {
-	 
-	}
+	// The save function is effectively handled by use:enhance now,
+	// but we can keep it if there's any pre-submit client-side validation
+	// or logic that doesn't fit into the enhance callback directly.
+	// For this refactor, we'll rely on use:enhance.
+	// async function save() {
+	// }
 </script>
 
 <!-- ---------- page ------------------------------------------------ -->
@@ -74,8 +103,8 @@
 				<li
 					class="p-4 hover:bg-gray-100 cursor-pointer"
 					on:click={() => open(tr)}>
-					<div class="font-medium">{tr.name}</div>
-					<div class="text-sm text-gray-500">{tr.status} • {new Date(tr.createdAt).toLocaleDateString()}</div>
+					<div class="font-medium">{tr.attributes?.name || 'Unnamed Tribute'}</div>
+					<div class="text-sm text-gray-500">{tr.attributes?.status || 'unknown'} • {tr.attributes?.createdAt ? new Date(tr.attributes.createdAt).toLocaleDateString() : 'N/A'}</div>
 				</li>
 			{/each}
 			{#if !$filtered.length}
@@ -94,29 +123,61 @@
 			transition:slide>
 			<div class="p-6 space-y-6">
 				<div class="flex justify-between items-start">
-					<h2 class="text-lg font-semibold">Edit {selected.name}</h2>
+					<h2 class="text-lg font-semibold">Edit {selected.attributes?.name || 'Tribute'}</h2>
 					<button class="text-gray-400 hover:text-gray-600" on:click={close}>✕</button>
 				</div>
 
-				<form class="space-y-4" on:submit|preventDefault={save}>
-					<!-- name -->
+				<form
+					method="POST"
+					action="?/updateTribute"
+					use:enhance={() => {
+						formProcessing = true;
+						formError = null;
+						return async ({ result }) => {
+							if (result.type === 'success' && result.data && result.data.updatedTribute) {
+								// result.data.updatedTribute from server is already { id, attributes }
+								const updatedTributeFromServer = result.data.updatedTribute as Tribute; 
+								tributesStore.update(currentTributes =>
+									currentTributes.map(t => t.id === updatedTributeFromServer.id ? updatedTributeFromServer : t)
+								);
+								close();
+							} else if (result.type === 'failure' && result.data) {
+								formError = typeof result.data.message === 'string' ? result.data.message : 'Failed to save tribute.';
+							} else if (result.type === 'error' && result.error) {
+								formError = result.error.message || 'An unexpected error occurred.';
+							} else {
+								formError = 'An unknown error occurred during save.';
+							}
+							formProcessing = false;
+						};
+					}}
+					class="space-y-4">
+					<input type="hidden" name="id" value={selected?.id} />
+					<!-- name: Bind to form.name, which is now part of Partial<TributeAttributes> -->
 					<div>
-						<label class="block text-sm font-medium mb-1">Name</label>
+						<label class="block text-sm font-medium mb-1" for="name-{selected?.id}">Name</label>
 						<input
+							id="name-{selected?.id}"
+							name="name"
 							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500"
-							bind:value={form.name} required />
+							bind:value={form.name}
+							required />
 					</div>
-					<!-- description -->
+					<!-- description: Bind to form.description -->
 					<div>
-						<label class="block text-sm font-medium mb-1">Description</label>
+						<label class="block text-sm font-medium mb-1" for="description-{selected?.id}">Description</label>
 						<textarea
+							id="description-{selected?.id}"
+							name="description"
 							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500 h-28"
 							bind:value={form.description} />
 					</div>
-					<!-- status -->
+					<!-- status: Bind to form.status -->
 					<div>
-						<label class="block text-sm font-medium mb-1">Status</label>
+						<label class="block text-sm font-medium mb-1" for="status-{selected?.id}">Status</label>
 						<select
+							id="status-{selected?.id}"
+							name="status"
 							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500"
 							bind:value={form.status}>
 							<option value="draft">Draft</option>
@@ -125,10 +186,15 @@
 						</select>
 					</div>
 
+					{#if formError}
+						<p class="text-red-500 text-sm">{formError}</p>
+					{/if}
+
 					<button
 						type="submit"
-						class="w-full py-2 px-4 rounded bg-indigo-600 text-white hover:bg-indigo-700">
-						Save
+						class="w-full py-2 px-4 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+						disabled={formProcessing}>
+						{formProcessing ? 'Saving...' : 'Save'}
 					</button>
 				</form>
 			</div>
