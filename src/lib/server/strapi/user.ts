@@ -208,24 +208,37 @@ export async function deleteUser(id: string, event: RequestEvent): Promise<User 
 export async function getCurrentUser(jwt: string, event: RequestEvent): Promise<User | null> {
 	if (!jwt) return null;
 	try {
-		// Strapi's /api/users/me returns the user object directly (PluginUsersPermissionsUser)
-		const strapiUser = await strapiFetch<PluginUsersPermissionsUser>(
-			'/users/me?populate=role', // Ensure role is populated
-			{
-				method: 'GET',
-				token: jwt, // Pass token explicitly to strapiFetch
+		// Fetch the current user data from an internal SvelteKit API endpoint
+		const response = await event.fetch('/api/auth/me', {
+			method: 'GET',
+			headers: {
+				Authorization: `Bearer ${jwt}`,
+			},
+		});
+
+		if (!response.ok) {
+			if (response.status === 401 || response.status === 403) {
+				console.warn(
+					`Attempt to get current user via /api/auth/me resulted in ${response.status}. Invalid/expired token or insufficient permissions.`
+				);
+				return null;
 			}
-			// 'event' is not strictly needed here if token is passed explicitly,
-			// but strapiFetch can use it if no token is provided.
-		);
-		return mapStrapiUserToAppUser(strapiUser);
-	} catch (error: any) {
-		if (error.status === 401 || error.status === 403) {
-			console.warn('Attempt to get current user with invalid/expired token or insufficient permissions.');
-			return null; // Common case for expired/invalid tokens
+			const errorBody = await response.text();
+			console.error(
+				`Error fetching current user from /api/auth/me: ${response.status} ${response.statusText}`,
+				errorBody
+			);
+			// Optionally, throw an error or handle it as per your application's needs
+			// For now, returning null for any non-successful response other than 401/403
+			return null; 
 		}
-		console.error('Error fetching current user via REST:', error);
-		// Re-throw for other unexpected errors
-		throw error;
+
+		const user: User | null = await response.json();
+		return user;
+	} catch (error: any) {
+		console.error('Error in getCurrentUser calling /api/auth/me:', error);
+		// Re-throw for other unexpected errors or return null
+		// throw error; // Or handle more gracefully
+		return null;
 	}
 }
