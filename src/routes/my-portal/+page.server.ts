@@ -1,7 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { error, redirect, fail } from '@sveltejs/kit';
 import { getUserFromJwt } from '$lib/utils/auth';
-import { getStrapiClient } from '$lib/server/strapi/client';
 import { updateTribute as strapiUpdateTribute } from '$lib/server/strapi/tribute';
 import type { Tribute, Status, TributeAttributes } from '$lib/types/tribute'; // Import TributeAttributes
 // Strapi's client typically returns data where each item has an id and attributes.
