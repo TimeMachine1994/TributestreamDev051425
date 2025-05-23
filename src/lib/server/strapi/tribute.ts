@@ -1,12 +1,12 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { strapiFetch } from './rest-api';
+import { mapStrapiTributeToAppTribute } from '$lib/types/tribute';
 import type {
 	Tribute,
 	TributeInputAttributes,
 	StrapiSingleTributeResponse,
 	StrapiTributeCollectionResponse,
-	PaginationMeta,
-	mapStrapiTributeToAppTribute
+	PaginationMeta
 } from '$lib/types/tribute';
 
 export type { PaginationMeta }; // Re-export for convenience

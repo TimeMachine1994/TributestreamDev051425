@@ -1,27 +1,25 @@
 import type { PageServerLoad, Actions } from './$types';
 import { error, redirect, fail } from '@sveltejs/kit';
-import { getUserFromJwt } from '$lib/utils/auth';
+// Removed getUserFromJwt as we are using locals.user
 import { updateTribute as strapiUpdateTribute } from '$lib/server/strapi/tribute';
-import type { Tribute, Status, TributeAttributes } from '$lib/types/tribute'; // Import TributeAttributes
+import type { Tribute, Status, TributeInputAttributes } from '$lib/types/tribute'; // Added TributeInputAttributes
 // Strapi's client typically returns data where each item has an id and attributes.
 // We can use a more generic type or a specific one if available from generated types.
-import type { ApiTributeTribute } from '$lib/types/generated/contentTypes';
+// import type { ApiTributeTribute } from '$lib/types/generated/contentTypes'; // Not directly used here now
 
-export const load: PageServerLoad = async (event) => {
-  const { cookies } = event;
+export const load: PageServerLoad = async (event) => { // event includes locals
+  const { locals } = event; // Destructure locals, cookies not directly needed here anymore for JWT
 
-  // Get JWT and check user authentication
-  const jwt = cookies.get('jwt');
-  const userJwt = jwt ? await getUserFromJwt(jwt, event) : null;
-
-  if (!userJwt) {
-    // Redirect to login if not authenticated
+  if (!locals.user) { // Check locals.user directly
+    console.log('Redirecting to /login because locals.user is not set.');
     throw redirect(302, '/login');
   }
 
+  // Use locals.user as the source of truth for the user object
+  const user = locals.user;
+
   // Fetch tributes
-  // Replace direct Strapi client usage with a fetch call to the internal API
-  const fetchResponse = await event.fetch('/api/tributes?populate=*'); // Assuming populate=* fetches all needed data
+  const fetchResponse = await event.fetch('/api/tributes?populate=*');
 
   if (!fetchResponse.ok) {
     const errorBody = await fetchResponse.text();
@@ -30,39 +28,15 @@ export const load: PageServerLoad = async (event) => {
   }
 
   const tributesApiResponse = await fetchResponse.json();
-  // Assuming tributesApiResponse is an object like { tributes: [...] } based on other usages of /api/tributes
-
-  // Properly map Strapi response data to Tribute[]
-  // Adjust to use 'tributesApiResponse.tributes' instead of 'tributesResponse.data'
-  // The `find()` method with `populate: '*'` might be returning flat objects.
-  // We need to transform them into the { id, attributes: { ... } } structure.
-  const rawDocs = (tributesApiResponse.tributes || []) as unknown as Array<any>; // Default to empty array if undefined
   
-  const tributesData: Tribute[] = rawDocs.map(doc => {
-    if (doc && typeof doc.id === 'number') {
-      // If 'attributes' field already exists and is an object, use it directly.
-      // This handles cases where Strapi might return nested or flat structures differently.
-      if (doc.attributes && typeof doc.attributes === 'object') {
-        return {
-          id: doc.id,
-          attributes: doc.attributes as TributeAttributes
-        };
-      }
-      // If attributes are top-level, construct the attributes object.
-      // Exclude 'id' and other known top-level Strapi fields from being put into 'attributes'.
-      const { id, createdBy, updatedBy, publishedAt, ...attributeFields } = doc;
-      return {
-        id: doc.id,
-        attributes: attributeFields as TributeAttributes
-      };
-    }
-    console.warn('Problematic document from Strapi (cannot map to Tribute):', JSON.stringify(doc));
-    return null; // Mark for filtering
-  }).filter(tribute => tribute !== null) as Tribute[]; // Filter out nulls and assert type
+  // The /api/tributes endpoint (using searchTributes) should already return data
+  // in the shape of Tribute[] (mapped via mapStrapiTributeToAppTribute).
+  // So, the complex mapping here is no longer needed and was causing type errors.
+  const tributesData: Tribute[] = (tributesApiResponse.tributes || []) as Tribute[];
 
   return {
     tributes: tributesData,
-    user: userJwt
+    user: user // Use the user from locals
   };
 };
 
@@ -86,7 +60,7 @@ export const actions: Actions = {
 		}
 
 		// Construct the data payload for Strapi update (flat attributes)
-		const tributeDataToUpdate: Partial<TributeAttributes> = {
+		const tributeDataToUpdate: Partial<TributeInputAttributes> = {
 			name: name as string,
 		};
 

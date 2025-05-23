@@ -71,7 +71,6 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.4",
-    "@strapi/client": "^1.4.0",
     "@types/jsonwebtoken": "^9.0.9",
     "backbone": "^1.6.1",
     "bcryptjs": "^3.0.2",

@@ -6,9 +6,15 @@
   import ProducerPortal from '$lib/components/dashboard/ProducerPortal.svelte';
   import PageBackground from '$lib/components/ui/PageBackground.svelte';
   import type { Tribute } from '$lib/types/tribute';
+  import type { User } from '$lib/types/types'; // Import the User type
 
   interface PageData {
-    user: { id: string; name: string; email: string; role: string };
+    user: {
+      id: string;
+      name: string; // Assuming this 'name' corresponds to User['fullName'] or User['username']
+      email: string;
+      role?: User['role']; // Use the role type from the imported User interface
+    };
     tributes: Tribute[];
   }
 

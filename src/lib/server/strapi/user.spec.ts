@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { getCurrentUser, getUserById, createUser, updateUser, deleteUser } from './user';
 import type { User } from '$lib/types/types';
 // import type { StrapiUserAttributes, PluginUsersPermissionsUser } from '$lib/types/generated/contentTypes'; // May not be needed if we only assert App User type

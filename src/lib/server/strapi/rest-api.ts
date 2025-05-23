@@ -31,10 +31,11 @@ async function strapiFetch<T = any>(
   options: FetchOptions = {},
   event?: RequestEvent // Optional: if JWT needs to be sourced from cookies for this specific call
 ): Promise<T> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const headers = new Headers(options.headers);
+  // Set default Content-Type if not already provided by options.headers
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   let token = options.token;
 
@@ -44,16 +45,17 @@ async function strapiFetch<T = any>(
   }
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   // Ensure endpoint starts with a slash and STRAPI_BASE_URL does not end with one
   const cleanBaseUrl = STRAPI_BASE_URL.endsWith('/') ? STRAPI_BASE_URL.slice(0, -1) : STRAPI_BASE_URL;
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
-  const url = `${cleanBaseUrl}/api${cleanEndpoint}`; // Strapi v4/v5 typically prefixes API routes with /api
+  const url = cleanBaseUrl.endsWith('/api') ? `${cleanBaseUrl}${cleanEndpoint}` : `${cleanBaseUrl}/api${cleanEndpoint}`; // Strapi v4/v5 typically prefixes API routes with /api
 
   console.log(`🚀 Strapi Fetch: ${options.method || 'GET'} ${url}`);
+  console.log('Strapi Request Headers:', JSON.stringify(Object.fromEntries(headers.entries())));
   if (options.body) {
     // Avoid logging sensitive data in production if body might contain it
     // console.log(`Payload: ${options.body}`);
@@ -67,20 +69,23 @@ async function strapiFetch<T = any>(
 
     if (!response.ok) {
       let errorBody: StrapiErrorResponse | { error: { message: string, status: number, details?: any } };
+      const responseText = await response.text(); // Get raw text first
+      console.error(`❌ Strapi API Raw Error Response Text for ${url}: ${responseText}`); // Log raw text
+
       try {
-        errorBody = await response.json();
+        errorBody = JSON.parse(responseText); // Try to parse the logged text
       } catch (e) {
         // If parsing JSON fails, create a generic error structure
         errorBody = {
           error: {
-            message: response.statusText || 'Unknown Strapi API error',
+            message: response.statusText || 'Unknown Strapi API error (raw text not JSON)',
             status: response.status,
-            details: {}
+            details: { rawResponse: responseText.substring(0, 1000) } // Include raw response snippet
           }
         };
       }
       
-      const errorMessage = errorBody.error?.message || 'Unknown error';
+      const errorMessage = errorBody.error?.message || 'Unknown error from Strapi';
       const errorStatus = errorBody.error?.status || response.status;
       const errorDetails = errorBody.error?.details || {};
 
