@@ -19,17 +19,24 @@ export const load: PageServerLoad = async (event) => {
     throw redirect(302, '/login');
   }
 
-  // Fetch tributes for the user
-  const strapiClient = getStrapiClient(event);
-  // Add populate: '*' to ensure all attributes are fetched
-  const tributesResponse = await strapiClient.collection('tributes').find({
-    populate: '*' 
-  });
+  // Fetch tributes
+  // Replace direct Strapi client usage with a fetch call to the internal API
+  const fetchResponse = await event.fetch('/api/tributes?populate=*'); // Assuming populate=* fetches all needed data
+
+  if (!fetchResponse.ok) {
+    const errorBody = await fetchResponse.text();
+    console.error(`Failed to fetch tributes: ${fetchResponse.status}`, errorBody);
+    throw error(fetchResponse.status, `Failed to load tributes: ${errorBody}`);
+  }
+
+  const tributesApiResponse = await fetchResponse.json();
+  // Assuming tributesApiResponse is an object like { tributes: [...] } based on other usages of /api/tributes
 
   // Properly map Strapi response data to Tribute[]
+  // Adjust to use 'tributesApiResponse.tributes' instead of 'tributesResponse.data'
   // The `find()` method with `populate: '*'` might be returning flat objects.
   // We need to transform them into the { id, attributes: { ... } } structure.
-  const rawDocs = tributesResponse.data as unknown as Array<any>; // Treat as array of any for now
+  const rawDocs = (tributesApiResponse.tributes || []) as unknown as Array<any>; // Default to empty array if undefined
   
   const tributesData: Tribute[] = rawDocs.map(doc => {
     if (doc && typeof doc.id === 'number') {
