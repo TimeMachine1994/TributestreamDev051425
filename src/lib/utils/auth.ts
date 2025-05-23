@@ -1,8 +1,9 @@
-import { getUserFromToken as _getUserFromJwt } from '$lib/utils/jwt';
+import { getCurrentUser } from '$lib/server/strapi/user'; // Updated import
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function getUserFromJwt(token: string, event: RequestEvent) {
-  return _getUserFromJwt(token, event);
+  // Call the refactored getCurrentUser which uses strapiFetch
+  return getCurrentUser(token, event);
 }
 
 import { serialize } from 'cookie';
