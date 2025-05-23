@@ -3,7 +3,6 @@ import type { Actions } from './$types';
 import { generateSecurePassword } from '$lib/utils/auth';
 import { validateSimplifiedMemorialForm } from '$lib/utils/form-validation';
 import { createTributeSlug } from '$lib/utils/string-helpers';
-import { getStrapiClient } from '$lib/server/strapi/client';
 
 
 export const actions = {
