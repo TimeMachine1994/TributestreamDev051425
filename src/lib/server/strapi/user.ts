@@ -40,7 +40,7 @@ interface StrapiSingleUserResponse {
 }
 
 // Helper to map Strapi User (from various possible structures) to Application User type
-function mapStrapiUserToAppUser(
+export function mapStrapiUserToAppUser(
 	strapiUserData: StrapiUserEntity | PluginUsersPermissionsUser | null | undefined
 ): User | null {
 	if (!strapiUserData) return null;
@@ -48,43 +48,58 @@ function mapStrapiUserToAppUser(
 	// Strapi's /users/me endpoint returns the user object directly (PluginUsersPermissionsUser).
 	// Strapi's /users/:id endpoint returns { data: StrapiUserEntity }.
 	const isDirectUserObject = 'username' in strapiUserData && !('attributes' in strapiUserData);
-	
-	const id = strapiUserData.id;
-	const attributes = isDirectUserObject ? strapiUserData : strapiUserData.attributes;
 
-	if (!attributes) return null;
+	// Ensure 'id' is correctly accessed. If PluginUsersPermissionsUser type is missing id, this 'as any' is a temporary workaround.
+	const id = isDirectUserObject
+	   ? (strapiUserData as any).id
+	   : (strapiUserData as StrapiUserEntity).id;
+	
+	const attributesSource = isDirectUserObject ? strapiUserData : strapiUserData.attributes;
+
+	if (!attributesSource) return null;
 
 	let appRole: User['role'] = undefined;
-	const strapiRoleData = attributes.role;
+	const strapiRoleData = attributesSource.role; // role is on attributesSource now
 
 	if (strapiRoleData) {
-		// Case 1: Role is directly on attributes (e.g., from /users/me?populate=role)
-		if ('name' in strapiRoleData && 'type' in strapiRoleData) { // Check for role attributes directly
+		// Case A: strapiRoleData is { data: StrapiUserRoleEntity }
+		if ('data' in strapiRoleData && strapiRoleData.data) {
+			const roleEntityFromData = strapiRoleData.data;
 			appRole = {
-				id: String((strapiRoleData as StrapiUserRoleEntity).id), // Cast to access id if it's a full entity
-				name: (strapiRoleData as StrapiUserRoleEntity).name,
-				type: (strapiRoleData as StrapiUserRoleEntity).type || '',
+				id: String(roleEntityFromData.id),
+				name: roleEntityFromData.attributes.name,
+				type: roleEntityFromData.attributes.type || '',
 			};
 		}
-		// Case 2: Role is nested under 'data' (e.g., from /users/:id?populate=role)
-		else if ('data' in strapiRoleData && strapiRoleData.data) {
+		// Case B: strapiRoleData is StrapiUserRoleEntity (has 'id' and 'attributes' directly)
+		else if ('attributes' in strapiRoleData && 'id' in strapiRoleData) {
+			const roleEntityDirect = strapiRoleData as StrapiUserRoleEntity;
 			appRole = {
-				id: String(strapiRoleData.data.id),
-				name: strapiRoleData.data.attributes.name,
-				type: strapiRoleData.data.attributes.type || '',
+				id: String(roleEntityDirect.id),
+				name: roleEntityDirect.attributes.name,
+				type: roleEntityDirect.attributes.type || '',
+			};
+		}
+		// Case C: Fallback for a flat role object if it somehow bypasses typing (e.g. PluginUsersPermissionsRole)
+		// This assumes 'id', 'name', 'type' are direct properties.
+		else if ('name' in strapiRoleData && 'type' in strapiRoleData && 'id' in (strapiRoleData as any)) {
+			 appRole = {
+				id: String((strapiRoleData as any).id),
+				name: (strapiRoleData as any).name,
+				type: (strapiRoleData as any).type || '',
 			};
 		}
 	}
 	
 	return {
 		id: String(id),
-		username: attributes.username,
-		email: attributes.email,
-		fullName: attributes.fullName || undefined,
-		phoneNumber: attributes.phoneNumber || undefined,
+		username: attributesSource.username,
+		email: attributesSource.email,
+		fullName: attributesSource.fullName || undefined,
+		phoneNumber: attributesSource.phoneNumber || undefined,
 		role: appRole,
-		// confirmed: attributes.confirmed, // Add if present in your app's User type
-		// blocked: attributes.blocked,   // Add if present in your app's User type
+		// confirmed: attributesSource.confirmed, // Add if present in your app's User type
+		// blocked: attributesSource.blocked,   // Add if present in your app's User type
 	};
 }
 
@@ -214,31 +229,52 @@ export async function getCurrentUser(jwt: string, event: RequestEvent): Promise<
 			headers: {
 				Authorization: `Bearer ${jwt}`,
 			},
+			redirect: 'manual', // Prevent event.fetch from automatically following redirects
 		});
 
-		if (!response.ok) {
-			if (response.status === 401 || response.status === 403) {
-				console.warn(
-					`Attempt to get current user via /api/auth/me resulted in ${response.status}. Invalid/expired token or insufficient permissions.`
-				);
-				return null;
-			}
-			const errorBody = await response.text();
-			console.error(
-				`Error fetching current user from /api/auth/me: ${response.status} ${response.statusText}`,
-				errorBody
+		// If response is a redirect (status 300-399), or not ok for other reasons
+		if (response.status >= 300 && response.status < 400) {
+			console.warn(
+				`[getCurrentUser] /api/auth/me responded with a redirect (status: ${response.status}). This might indicate an issue. Returning null.`
 			);
-			// Optionally, throw an error or handle it as per your application's needs
-			// For now, returning null for any non-successful response other than 401/403
-			return null; 
+			// Log redirect location if available
+			const location = response.headers.get('location');
+			if (location) {
+				console.warn(`[getCurrentUser] Redirect location: ${location}`);
+			}
+			return null;
 		}
 
-		const user: User | null = await response.json();
-		return user;
+		if (!response.ok) {
+			const errorBody = await response.text().catch(() => "Could not retrieve error body");
+			if (response.status === 401 || response.status === 403) {
+				console.warn(
+					`[getCurrentUser] /api/auth/me responded with ${response.status}. Invalid/expired token or insufficient permissions. JWT: ${jwt ? jwt.substring(0, 20) + "..." : "N/A"}. Body: ${errorBody}. Returning null.`
+				);
+			} else {
+				console.error(
+					`[getCurrentUser] Error fetching current user from /api/auth/me: ${response.status} ${response.statusText}. JWT: ${jwt ? jwt.substring(0, 20) + "..." : "N/A"}. Body: ${errorBody}. Returning null.`
+				);
+			}
+			return null;
+		}
+
+		try {
+			const user: User | null = await response.json();
+			if (user && user.id) { // Basic check for a valid user object
+				console.log(`[getCurrentUser] Successfully fetched user from /api/auth/me. User ID: ${user.id}. Returning user.`);
+			} else {
+				console.warn(`[getCurrentUser] /api/auth/me response was OK, but user data is null or lacks ID. Response: ${JSON.stringify(user)}. Returning null.`);
+				return null; // Ensure we return null if user data is not as expected
+			}
+			return user;
+		} catch (jsonError: any) {
+			console.error(`[getCurrentUser] Failed to parse JSON response from /api/auth/me: ${jsonError.message}. JWT: ${jwt ? jwt.substring(0, 20) + "..." : "N/A"}. Returning null.`, jsonError);
+			return null;
+		}
+
 	} catch (error: any) {
-		console.error('Error in getCurrentUser calling /api/auth/me:', error);
-		// Re-throw for other unexpected errors or return null
-		// throw error; // Or handle more gracefully
+		console.error(`[getCurrentUser] Exception during call to /api/auth/me: ${error.message}. JWT: ${jwt ? jwt.substring(0, 20) + "..." : "N/A"}. Returning null.`, error);
 		return null;
 	}
 }

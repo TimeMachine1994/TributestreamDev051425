@@ -4,6 +4,7 @@
     import { slide } from 'svelte/transition';
     import { quintOut } from 'svelte/easing';
     import { onMount } from 'svelte';
+    import MemorialCard from '$lib/components/home/MemorialCard.svelte';
     
     // Define props using Svelte 5 runes syntax
     const { form, data } = $props();
@@ -235,7 +236,7 @@
     <div class="absolute inset-0 bg-black opacity-50 z-10"></div>
     
     <!-- Main content container -->
-    <div class="relative z-20 flex flex-col items-center justify-start min-h-screen pt-8 px-4 font-['Fanwood_Text']">
+    <div class="relative z-20 flex flex-col items-center justify-center min-h-screen pt-8 px-4 font-['Fanwood_Text']">
         <!-- Header section -->
         <h1 class="text-4xl md:text-6xl text-center mb-4">
             We Make Hearts Full Again
@@ -249,10 +250,11 @@
         {/if}
         
         <!-- Main content area -->
-        <div class="w-full max-w-lg">
+        <div class="w-full max-w-lg flex flex-col flex-grow p-6 bg-black bg-opacity-10 rounded-xl shadow-2xl">
             {#if formState === 'initial'}
                 <!-- Initial state - Name input form and actions -->
-                <p class="text-center mb-8 text-lg md:text-xl">
+                <div class="bg-black bg-opacity-30 p-6 rounded-lg shadow-lg">
+                    <p class="text-center mb-8 text-lg md:text-xl">
                     Tributestream broadcasts high quality audio and video of your loved one's celebration of life. <br> 
                     Enter your loved one's name below to search, or create a new memorial.
                 </p>
@@ -269,7 +271,7 @@
                         id="searchTerm"
                         name="searchTerm"
                         placeholder="Enter a name to search"
-                        class="w-full px-4 py-2 text-gray-900 rounded-md mb-4 text-center"
+                        class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 text-white rounded-lg mb-6 text-center text-lg placeholder-gray-400 focus:ring-2 focus:ring-[#D5BA7F] focus:border-transparent border border-gray-700"
                         bind:value={searchTerm}
                         aria-label="Search for a memorial"
                     />
@@ -292,6 +294,7 @@
                         </button>
                     </div>
                 </form>
+                </div>
                 
             {:else if formState === 'searching' || (form?.search && form.results)}
                 <!-- Search results state -->
@@ -314,17 +317,7 @@
                     {#if form?.search && form.results && form.results.length > 0}
                         <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
                             {#each form.results as tribute}
-                                <div class="bg-gray-800 p-4 rounded-lg hover:bg-gray-700 transition-colors">
-                                    <a 
-                                        href={`/celebration-of-life-for-${tribute.slug}`}
-                                        class="block"
-                                    >
-                                        <h3 class="text-xl font-semibold text-[#D5BA7F]">{tribute.loved_one_name}</h3>
-                                        <p class="text-sm text-gray-300">
-                                            Created {new Date(tribute.created_at).toLocaleDateString()}
-                                        </p>
-                                    </a>
-                                </div>
+                                <MemorialCard tribute={tribute} />
                             {/each}
                         </div>
                         

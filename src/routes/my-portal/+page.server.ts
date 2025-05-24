@@ -1,43 +1,50 @@
 import type { PageServerLoad, Actions } from './$types';
-import { error, redirect, fail } from '@sveltejs/kit';
-// Removed getUserFromJwt as we are using locals.user
-import { updateTribute as strapiUpdateTribute } from '$lib/server/strapi/tribute';
-import type { Tribute, Status, TributeInputAttributes } from '$lib/types/tribute'; // Added TributeInputAttributes
+import { redirect, fail } from '@sveltejs/kit'; // Removed 'error' as it's not used in the new load
+import { getStrapiTributesByOwner, updateTribute as strapiUpdateTribute } from '$lib/server/strapi/tribute';
+import { mapStrapiTributeToAppTribute, type Tribute, type Status, type TributeInputAttributes } from '$lib/types/tribute'; // Added TributeInputAttributes and ensured Tribute is a named import
+
 // Strapi's client typically returns data where each item has an id and attributes.
 // We can use a more generic type or a specific one if available from generated types.
 // import type { ApiTributeTribute } from '$lib/types/generated/contentTypes'; // Not directly used here now
 
-export const load: PageServerLoad = async (event) => { // event includes locals
-  const { locals } = event; // Destructure locals, cookies not directly needed here anymore for JWT
-
-  if (!locals.user) { // Check locals.user directly
-    console.log('Redirecting to /login because locals.user is not set.');
-    throw redirect(302, '/login');
+export const load: PageServerLoad = async (event) => {
+  if (!event.locals.user || !event.locals.user.id) {
+    console.log('[my-portal/load] User not found or user ID missing, redirecting to /login.');
+    throw redirect(303, '/login'); // Or your appropriate login route
   }
 
-  // Use locals.user as the source of truth for the user object
-  const user = locals.user;
+  try {
+    const ownerId = Number(event.locals.user.id);
+    const strapiResponse = await getStrapiTributesByOwner(ownerId, event);
 
-  // Fetch tributes
-  const fetchResponse = await event.fetch('/api/tributes?populate=*');
-
-  if (!fetchResponse.ok) {
-    const errorBody = await fetchResponse.text();
-    console.error(`Failed to fetch tributes: ${fetchResponse.status}`, errorBody);
-    throw error(fetchResponse.status, `Failed to load tributes: ${errorBody}`);
+    if (strapiResponse && strapiResponse.data) {
+      const mappedTributes = strapiResponse.data
+        .map(entity => mapStrapiTributeToAppTribute(entity))
+        .filter(tribute => tribute !== null) as Tribute[]; // Ensure type assertion
+      
+      console.log(`[my-portal/load] Successfully fetched and mapped ${mappedTributes.length} tributes for user ${ownerId}`);
+      return {
+        tributes: mappedTributes,
+        user: event.locals.user // Pass user data as well
+      };
+    } else {
+      console.log(`[my-portal/load] No tributes found or empty response for user ${ownerId}`);
+      return {
+        tributes: [],
+        user: event.locals.user
+      };
+    }
+  } catch (error) {
+    console.error('[my-portal/load] Error fetching tributes:', error);
+    // It's good practice to check the type of error if you need to handle specific cases
+    // For now, we'll return a generic error message.
+    // const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return {
+      tributes: [],
+      error: 'Failed to load tributes.', // Pass an error message to the page
+      user: event.locals.user
+    };
   }
-
-  const tributesApiResponse = await fetchResponse.json();
-  
-  // The /api/tributes endpoint (using searchTributes) should already return data
-  // in the shape of Tribute[] (mapped via mapStrapiTributeToAppTribute).
-  // So, the complex mapping here is no longer needed and was causing type errors.
-  const tributesData: Tribute[] = (tributesApiResponse.tributes || []) as Tribute[];
-
-  return {
-    tributes: tributesData,
-    user: user // Use the user from locals
-  };
 };
 
 export const actions: Actions = {

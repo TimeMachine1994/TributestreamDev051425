@@ -30,8 +30,7 @@ export const GET: RequestHandler = async (event) => {
     if (populateParam) {
       if (populateParam === '*') {
         console.log("Overriding populate='*' with ['owner'] for testing.");
-        populate = ['owner']; // Override '*' with a more specific populate
-      } else {
+       } else {
         populate = populateParam.split(',');
       }
     }
