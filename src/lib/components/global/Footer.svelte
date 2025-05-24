@@ -3,24 +3,32 @@
 </script>
 
 <!-- Footer Section -->
-<footer class="bg-gray-900 text-gray-300 py-16 sm:py-20">
-    <div class="container mx-auto px-6 sm:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
+<footer class="bg-black text-white py-12">
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
         <!-- Logo and Brief Description -->
         <div class="flex flex-col items-center md:items-start">
             <!-- Logo -->
+<<<<<<< HEAD
             <a href="https://tributestream.com" class="text-2xl font-bold text-white hover:text-brand-gold transition-colors duration-200 mb-4 inline-block">
+=======
+            <a href="https://tributestream.com" class="text-xl text-white">
+>>>>>>> parent of ef35d37 (hmm)
                 <span class="tributestream">
                     <i>Tributestream</i><span class="r-symbol">®</span>
                 </span>
             </a>
             <!-- Brief Description -->
-            <p class="text-sm text-gray-400 mt-4 leading-relaxed">
+            <p class="text-sm mt-4">
                 Tributestream is a premier, affordable, and reliable livestreaming service to transport your families and friends to a celebration of life. We don't make videos, we make documentaries.
             </p>
             <!-- Funeral Director Form Link -->
             <a 
                 href="/fd-form"
+<<<<<<< HEAD
                 class="text-brand-gold hover:text-white mt-6 text-sm font-medium hover:underline transition-colors duration-200"
+=======
+                class="text-[#D5BA7F] hover:text-white mt-4 text-sm underline transition-colors duration-200"
+>>>>>>> parent of ef35d37 (hmm)
             >
                 Funeral Director Form
             </a>
@@ -28,34 +36,34 @@
 
         <!-- Coverage Locations List -->
         <div>
-            <h3 class="text-md font-semibold text-gray-200 uppercase tracking-wider mb-5">COVERAGE LOCATIONS</h3>
-            <p class="text-sm text-gray-400 leading-relaxed mb-2">
+            <h3 class="text-lg font-semibold mb-4">COVERAGE LOCATIONS</h3>
+            <p class="text-sm">
                 Orange, Lake, Osceola, Seminole, Marion, Sumter, Volusia, Flagler, and Brevard counties.
             </p>
-            <p class="text-sm text-gray-400 leading-relaxed mt-4 mb-2">Please call if your location is not listed:</p>
-            <p class="text-sm text-gray-400 leading-relaxed mb-2">+1 (407) 221-5922</p>
-            <p class="text-sm text-gray-400 leading-relaxed mb-2">Contact@tributestream.com</p>
+            <p class="text-sm mt-4">Please call if your location is not listed:</p>
+            <p class="text-sm">+1 (407) 221-5922</p>
+            <p class="text-sm">Contact@tributestream.com</p>
         </div>
 
         <!-- Office Hours -->
         <div>
-            <h3 class="text-md font-semibold text-gray-200 uppercase tracking-wider mb-5">Office Hours</h3>
-            <p class="text-sm text-gray-400 leading-relaxed mb-2">
+            <h3 class="text-lg font-semibold mb-4">Office Hours</h3>
+            <p class="text-sm">
                 Monday – Friday:<br>10:00AM – 5:00PM EST
             </p>
-            <p class="text-sm text-gray-400 leading-relaxed mt-4 mb-2">
+            <p class="text-sm mt-4">
                 Saturday – Sunday:<br>12:00PM – 5:00PM EST
             </p>
-            <h3 class="text-md font-semibold text-gray-200 uppercase tracking-wider mt-8 mb-5">After Hours</h3>
-            <p class="text-sm text-gray-400 leading-relaxed mb-2">
+            <h3 class="text-lg font-semibold mt-8 mb-4">After Hours</h3>
+            <p class="text-sm">
                 If you need to contact us after hours, feel free to reach out via text or email.
             </p>
         </div>
 
         <!-- Review Us on Google Section -->
         <div>
-            <h3 class="text-md font-semibold text-gray-200 uppercase tracking-wider mb-5">REVIEW US ON GOOGLE</h3>
-            <p class="text-sm text-gray-400 leading-relaxed mb-4">
+            <h3 class="text-lg font-semibold mb-4">REVIEW US ON GOOGLE</h3>
+            <p class="text-sm mb-4">
                 If you appreciated the service we provided you and your family, please consider leaving us a five-star review on Google!
             </p>
             <!-- Button for Reviewing on Google -->
@@ -69,7 +77,7 @@
     </div>
 
     <!-- Footer Copyright -->
-    <div class="border-t border-gray-700 mt-12 pt-8">
+    <div class="border-t border-gray-700 mt-8 pt-4">
         <p class="text-center text-sm text-gray-500">
             © 2019-2025 All rights reserved | Tributestream is a Registered Trademark
         </p>

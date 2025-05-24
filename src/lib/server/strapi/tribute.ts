@@ -6,8 +6,7 @@ import type {
 	TributeInputAttributes,
 	StrapiSingleTributeResponse,
 	StrapiTributeCollectionResponse,
-	PaginationMeta,
-	StrapiTributeEntity
+	PaginationMeta
 } from '$lib/types/tribute';
 
 export type { PaginationMeta }; // Re-export for convenience
@@ -36,29 +35,6 @@ export async function createTribute(
 		console.error('❌ Error creating tribute via REST:', error);
 		throw error; // Re-throw to be handled by the caller (e.g., form action)
 	}
-} // Closing createTribute
-
-export async function createStrapiTribute(
-  tributeData: TributeInputAttributes,
-  event: RequestEvent
-): Promise<StrapiTributeEntity | null> {
-  console.log('[createStrapiTribute] Attempting to create tribute with data:', tributeData);
-  const payload = { data: tributeData };
-  try {
-    const createdTribute = await strapiFetch<StrapiTributeEntity>(
-      'tributes', // Or your specific Strapi API ID for the tributes collection
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      },
-      event // Pass the event for authentication context
-    );
-    console.log('[createStrapiTribute] Successfully created tribute:', createdTribute);
-    return createdTribute;
-  } catch (error) {
-    console.error('[createStrapiTribute] Error creating tribute in Strapi:', error);
-    throw error; // Rethrow the error
-  }
 }
 
 export async function getTributeById(
@@ -168,27 +144,6 @@ export async function deleteTribute(
 	}
 }
 
-export async function getStrapiTributesByOwner(
-  ownerId: number,
-  event: RequestEvent
-): Promise<StrapiTributeCollectionResponse | null> {
-  console.log('[getStrapiTributesByOwner] Attempting to fetch tributes for owner ID:', ownerId);
-  try {
-    const endpoint = `tributes?filters[owner][id][$eq]=${ownerId}&populate=owner&sort=createdAt:desc`;
-    const response = await strapiFetch<StrapiTributeCollectionResponse>(
-      endpoint,
-      { method: 'GET' },
-      event // Pass the event for authentication context
-    );
-    console.log('[getStrapiTributesByOwner] Successfully fetched tributes:', response.data.length, 'tributes found.');
-    return response;
-  } catch (error) {
-    console.error('[getStrapiTributesByOwner] Error fetching tributes from Strapi:', error);
-    // For now, rethrowing is fine as per instructions.
-    // Depending on desired behavior, you might return null or a specific error structure.
-    throw error;
-  }
-}
 interface SearchTributesParams {
 	page?: number;
 	pageSize?: number;
