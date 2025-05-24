@@ -6,7 +6,7 @@
   title="How Does It Work?" 
   metaDescription="Learn how Tributestream's livestreaming service process works, from initial consultation to delivery of the final memorial video."
 >
-  <section class="content-section">
+  <section class="mb-16">
     <p class="text-lg mb-10">
       Tributestream provides a seamless, respectful process for livestreaming memorial services. 
       Our professional team handles all technical aspects, allowing you to focus on what matters most.
@@ -89,8 +89,8 @@
     </div>
   </section>
 
-  <section class="content-section mt-16">
-    <h2 class="section-title">Technical Overview</h2>
+  <section class="mb-16 mt-16">
+    <h2 class="text-brand-gold text-3xl font-semibold mb-6">Technical Overview</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
       <div class="bg-zinc-900 p-6 rounded-lg border border-[#D5BA7F]/20">
@@ -120,7 +120,7 @@
   </section>
 
   <div class="mt-12 text-center">
-    <a href="/schedule-now" class="gold-btn inline-block">
+    <a href="/schedule-now" class="bg-brand-gold text-black py-3 px-6 rounded-md font-semibold transition-all duration-300 ease-linear hover:shadow-[0_0_10px_2px_var(--color-brand-gold)] inline-block">
       Schedule Your Service
     </a>
   </div>

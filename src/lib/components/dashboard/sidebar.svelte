@@ -24,125 +24,27 @@
   ];
 </script>
 
-<aside class="dashboard-sidebar">
-  <nav>
-    <ul>
+<aside class="bg-slate-800 text-white w-[60px] md:w-[250px] h-full fixed top-0 left-0 pt-16 flex flex-col justify-between z-50">
+  <nav class="flex-grow">
+    <ul class="list-none p-0 m-0">
       {#each navItems as item}
         <li>
           <a 
             href={item.href} 
-            class="nav-item {item.active($page.url.pathname) ? 'active' : ''}"
+            class="flex items-center px-4 md:px-6 py-4 text-slate-300 no-underline transition-all duration-200 ease-linear hover:bg-white/10 hover:text-white md:justify-start justify-center {item.active($page.url.pathname) ? 'bg-white/20 text-white border-l-4 border-primary' : ''}"
           >
-            <span class="icon">{item.icon}</span>
-            <span class="label">{item.label}</span>
+            <span class="text-xl w-6 text-center md:mr-3">{item.icon}</span>
+            <span class="hidden md:inline">{item.label}</span>
           </a>
         </li>
       {/each}
     </ul>
   </nav>
   
-  <div class="sidebar-footer">
-    <a href="/" class="back-to-site">
-      <span class="icon">🏠</span>
-      <span class="label">Back to Site</span>
+  <div class="p-4 border-t border-white/10">
+    <a href="/" class="flex items-center p-3 text-slate-300 no-underline rounded transition-all duration-200 ease-linear hover:bg-white/10 hover:text-white md:justify-start justify-center">
+      <span class="text-xl w-6 text-center md:mr-3">🏠</span>
+      <span class="hidden md:inline">Back to Site</span>
     </a>
   </div>
 </aside>
-
-<style>
-  .dashboard-sidebar {
-    background-color: #2c3e50;
-    color: white;
-    width: 250px;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    padding-top: 4rem; /* Space for header */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    z-index: 50;
-  }
-  
-  nav {
-    flex-grow: 1;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  
-  .nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-  }
-  
-  .nav-item.active {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border-left: 4px solid #4a90e2;
-  }
-  
-  .icon {
-    margin-right: 0.75rem;
-    font-size: 1.25rem;
-    width: 1.5rem;
-    text-align: center;
-  }
-  
-  .sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .back-to-site {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-  }
-  
-  .back-to-site:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .dashboard-sidebar {
-      width: 60px;
-    }
-    
-    .label {
-      display: none;
-    }
-    
-    .icon {
-      margin-right: 0;
-    }
-    
-    .nav-item {
-      justify-content: center;
-      padding: 1rem;
-    }
-    
-    .back-to-site {
-      justify-content: center;
-    }
-  }
-</style>

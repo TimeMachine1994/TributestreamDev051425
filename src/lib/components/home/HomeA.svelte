@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { enhance } from '$app/forms';
- let button = "bg-[#D5BA7F] text-black  py-2 px-4 border border-transparent rounded-lg hover:text-black hover:shadow-[0_0_10px_4px_#D5BA7F] transition-all duration-300 ease-in-out";
+ let button = "bg-brand-gold text-black  py-2 px-4 border border-transparent rounded-lg hover:text-black hover:shadow-[0_0_10px_4px_var(--color-brand-gold)] transition-all duration-300 ease-in-out";
     
     // Form state machine
     let formState = $state('initial'); // initial, editing, submitting, success
@@ -174,25 +174,11 @@
 </script>
 
 <!-- Unified HomePage component with video background -->
-<section class="relative bg-gray-900 text-white min-h-screen">
-    <!-- Video background with conditional blur effect -->
-    <video 
-        autoplay 
-        muted 
-        loop 
-        playsinline 
-        class="absolute inset-0 w-full h-full object-cover z-0 transition-all duration-300" 
-        class:blur-sm={isBlurred}
-    >
-        <source src="https://209.74.64.181:12091/down/FCymVumu4aQG.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-    </video>
-    
-    <!-- Overlay for better text readability -->
-    <div class="absolute inset-0 bg-black opacity-50 z-10"></div>
+<section class="bg-gray-700 text-white min-h-screen">
+    <!-- Video and overlay removed -->
     
     <!-- Main content container -->
-    <div class="relative z-20 flex flex-col items-center justify-start min-h-screen pt-8 px-4 font-['Fanwood_Text']">
+    <div class="flex flex-col items-center justify-center min-h-screen pt-24 px-4 font-fanwood">
         <!-- Header section -->
         <h1 class="text-4xl md:text-6xl text-center mb-4">
             We Make Hearts Full Again
@@ -209,38 +195,40 @@
         <div class="w-full max-w-md">
             {#if formState === 'initial'}
                 <!-- Initial state - Name input form -->
-                <p class="text-center mb-8 text-lg md:text-xl">
-                    Tributestream broadcasts high quality audio and video of your loved one's celebration of life. <br> 
-                    Enter your loved one's name below to begin your journey with Tributestream.
+                <p class="text-center mb-8 text-lg md:text-xl text-gray-300">
+                    Tributestream broadcasts high quality audio and video
+                    of your loved one's celebration of life. <br>
+                    Enter your loved one's name below to search, or create a
+                    new memorial.
                 </p>
                 
                 <form on:submit|preventDefault={handleSearch} class="w-full">
                     <input
                         type="text"
                         id="lovedOneName"
-                        placeholder="Loved One's Name Here"
-                        class="w-full px-4 py-2 text-gray-900 rounded-md mb-4 text-center"
+                        placeholder="Enter a name to search"
+                        class="w-full px-4 py-3 text-gray-900 bg-white rounded-md mb-6 text-center placeholder-gray-500"
                         bind:value={lovedOneName}
                         aria-label="Loved One's Name"
                         aria-required="true"
                     />
                     
                     <div class="flex space-x-4 justify-center">
-                        <button 
+                        <button
                             type="button"
                             on:click={handleCreateTribute}
-                            class="bg-[#D5BA7F] text-black font-bold py-2 px-4 border border-transparent rounded-lg hover:text-black hover:shadow-[0_0_10px_4px_#D5BA7F] transition-all duration-300 ease-in-out"
+                            class="bg-brand-gold text-black font-bold py-2 px-6 rounded-md hover:text-black hover:shadow-[0_0_10px_4px_var(--color-brand-gold)] transition-all duration-300 ease-in-out"
                             disabled={!isNameValid}
                         >
-                            Create Tribute
+                            Create Memorial
                         </button>
                         
                         <button
                             type="submit"
-                            class={button}
+                            class="bg-brand-gold text-black font-bold py-2 px-6 rounded-md hover:text-black hover:shadow-[0_0_10px_4px_var(--color-brand-gold)] transition-all duration-300 ease-in-out"
                             disabled={isSearching || !isNameValid}
                         >
-                            {isSearching ? 'Searching...' : 'Search Streams'}
+                            {isSearching ? 'Searching...' : 'Search Memorials'}
                         </button>
                     </div>
                 </form>

@@ -8,7 +8,7 @@
         <!-- Logo and Brief Description -->
         <div class="flex flex-col items-center md:items-start">
             <!-- Logo -->
-            <a href="https://tributestream.com" class="text-2xl font-bold text-white hover:text-[#D5BA7F] transition-colors duration-200 mb-4 inline-block">
+            <a href="https://tributestream.com" class="text-2xl font-bold text-white hover:text-brand-gold transition-colors duration-200 mb-4 inline-block">
                 <span class="tributestream">
                     <i>Tributestream</i><span class="r-symbol">®</span>
                 </span>
@@ -20,7 +20,7 @@
             <!-- Funeral Director Form Link -->
             <a 
                 href="/fd-form"
-                class="text-[#D5BA7F] hover:text-white mt-6 text-sm font-medium hover:underline transition-colors duration-200"
+                class="text-brand-gold hover:text-white mt-6 text-sm font-medium hover:underline transition-colors duration-200"
             >
                 Funeral Director Form
             </a>
@@ -61,7 +61,7 @@
             <!-- Button for Reviewing on Google -->
             <a 
                 href="https://g.page/r/CT2e1k0NJGeKEAE/review"
-                class="bg-[#D5BA7F] text-black py-2 px-4 border border-transparent rounded-lg hover:text-black hover:shadow-[0_0_10px_4px_#D5BA7F] transition-all duration-300 ease-in-out inline-block"
+                class="bg-brand-gold text-black py-2 px-4 border border-transparent rounded-lg hover:text-black hover:shadow-[0_0_10px_4px_var(--color-brand-gold)] transition-all duration-300 ease-in-out inline-block"
             >
                 Review Us
             </a>

@@ -6,8 +6,8 @@
   title="Why Tributestream?" 
   metaDescription="Discover why Tributestream is the premier livestreaming service for celebrations of life, creating lasting memories for families and friends."
 >
-  <section class="content-section">
-    <h2 class="section-title">A Dignified Approach to Memorial Livestreaming</h2>
+  <section class="mb-16">
+    <h2 class="text-brand-gold text-3xl font-semibold mb-6">A Dignified Approach to Memorial Livestreaming</h2>
     <p class="text-lg mb-6">
       Tributestream provides a respectful, professional livestreaming service specifically designed for celebrations of life.
       Our approach combines technical expertise with compassionate service to create meaningful experiences for families
@@ -31,8 +31,8 @@
     </div>
   </section>
 
-  <section class="content-section">
-    <h2 class="section-title">Benefits for Families</h2>
+  <section class="mb-16">
+    <h2 class="text-brand-gold text-3xl font-semibold mb-6">Benefits for Families</h2>
     <p class="text-lg mb-10">
       When distance prevents attendance, Tributestream ensures that family members and friends can still participate
       in this important life event.
@@ -57,7 +57,7 @@
   </section>
 
   <div class="mt-12 text-center">
-    <a href="/schedule-now" class="gold-btn inline-block">
+    <a href="/schedule-now" class="bg-brand-gold text-black py-3 px-6 rounded-md font-semibold transition-all duration-300 ease-linear hover:shadow-[0_0_10px_2px_var(--color-brand-gold)] inline-block">
       Schedule a Consultation
     </a>
   </div>

@@ -130,7 +130,7 @@
   title="Schedule Now" 
   metaDescription="Schedule a consultation for Tributestream's professional livestreaming service for celebrations of life and memorial services."
 >
-  <section class="content-section">
+  <section class="mb-16">
     <p class="text-lg mb-10">
       Ready to provide a meaningful livestreaming experience for your celebration of life event? 
       Fill out the form below to request a consultation with our team. We'll respond within 24 hours 
@@ -325,7 +325,7 @@
           
           <div>
             <button
-              class="gold-btn w-full flex items-center justify-center"
+              class="bg-brand-gold text-black py-3 px-6 rounded-md font-semibold transition-all duration-300 ease-linear hover:shadow-[0_0_10px_2px_var(--color-brand-gold)] w-full flex items-center justify-center"
               on:click|preventDefault={handleRecaptcha}
               disabled={$submitting}
             >

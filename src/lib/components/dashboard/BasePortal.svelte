@@ -14,7 +14,7 @@
   }>();
 </script>
 
-<div class="base-portal">
+<div >
   {#if header}
     {@render header()}
   {:else}

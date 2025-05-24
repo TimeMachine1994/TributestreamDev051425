@@ -94,7 +94,7 @@
 			<input
 				type="text"
 				placeholder="Search…"
-				class="mt-2 w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500"
+				class="mt-2 w-full rounded border-gray-300 focus:ring-0 focus:border-primary"
 				bind:value={$search} />
 		</header>
 
@@ -159,7 +159,7 @@
 						<input
 							id="name-{selected?.id}"
 							name="name"
-							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500"
+							class="w-full rounded border-gray-300 focus:ring-0 focus:border-primary"
 							bind:value={form.name}
 							required />
 					</div>
@@ -169,7 +169,7 @@
 						<textarea
 							id="description-{selected?.id}"
 							name="description"
-							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500 h-28"
+							class="w-full rounded border-gray-300 focus:ring-0 focus:border-primary h-28"
 							bind:value={form.description} />
 					</div>
 					<!-- status: Bind to form.status -->
@@ -178,7 +178,7 @@
 						<select
 							id="status-{selected?.id}"
 							name="status"
-							class="w-full rounded border-gray-300 focus:ring-0 focus:border-indigo-500"
+							class="w-full rounded border-gray-300 focus:ring-0 focus:border-primary"
 							bind:value={form.status}>
 							<option value="draft">Draft</option>
 							<option value="published">Published</option>
@@ -192,7 +192,7 @@
 
 					<button
 						type="submit"
-						class="w-full py-2 px-4 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+						class="w-full py-2 px-4 rounded bg-primary text-white hover:bg-primary disabled:opacity-50"
 						disabled={formProcessing}>
 						{formProcessing ? 'Saving...' : 'Save'}
 					</button>
