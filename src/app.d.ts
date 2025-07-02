@@ -17,6 +17,14 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	// Augment the Window interface for grecaptcha
+	interface Window {
+		grecaptcha: {
+			ready: (callback: () => void) => void;
+			execute: (siteKey: string, options: { action: string }) => Promise<string>;
+		};
+	}
 }
 
 export {};
